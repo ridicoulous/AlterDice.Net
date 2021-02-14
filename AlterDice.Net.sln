@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31005.135
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlterDice.Net", "AlterDice.Net\AlterDice.Net.csproj", "{FC9E7690-98B3-45A9-9EC4-142A8F44D62B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlterDice.ConsoleClient", "AlterDice.ConsoleClient\AlterDice.ConsoleClient.csproj", "{3239052E-D2F2-4960-BE7B-40890AD0E51C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FC9E7690-98B3-45A9-9EC4-142A8F44D62B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC9E7690-98B3-45A9-9EC4-142A8F44D62B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC9E7690-98B3-45A9-9EC4-142A8F44D62B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC9E7690-98B3-45A9-9EC4-142A8F44D62B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3239052E-D2F2-4960-BE7B-40890AD0E51C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3239052E-D2F2-4960-BE7B-40890AD0E51C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3239052E-D2F2-4960-BE7B-40890AD0E51C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3239052E-D2F2-4960-BE7B-40890AD0E51C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F89D0235-67E9-45EB-9998-05F85F00C495}
+	EndGlobalSection
+EndGlobal
