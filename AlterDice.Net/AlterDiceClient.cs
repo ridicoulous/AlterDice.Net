@@ -39,16 +39,22 @@ namespace AlterDice.Net
         public AlterDiceClient(AlterDiceClientOptions exchangeOptions, AlterDiceAuthenticationProvider authenticationProvider) : this("AlterDiceClient", exchangeOptions, authenticationProvider)
         {
         }
-        public AlterDiceClient(string clientName, AlterDiceClientOptions exchangeOptions, AlterDiceAuthenticationProvider authenticationProvider) : base(clientName, exchangeOptions, authenticationProvider)
+        public AlterDiceClient(string clientName, AuthenticationProvider authenticationProvider) : this(clientName, defaultOptions, authenticationProvider)
+        {
+        }
+        public AlterDiceClient(string clientName, AlterDiceClientOptions exchangeOptions, AuthenticationProvider authenticationProvider) : base(clientName, exchangeOptions, authenticationProvider)
         {
             LoginEmail = exchangeOptions.Login;
             Password = exchangeOptions.Password;
-            if (!String.IsNullOrEmpty(LoginEmail)&& !String.IsNullOrEmpty(Password))
+            if (!String.IsNullOrEmpty(LoginEmail) && !String.IsNullOrEmpty(Password) && authenticationProvider == null)
             {
                 LoginAsync().GetAwaiter().GetResult();
             }
         }
-
+        public AuthenticationProvider GetAuth()
+        {
+            return this.authProvider;
+        }
         private async Task LoginAsync(CancellationToken ct = default)
         {
             var request = await SendRequest<AlterDiceLoginResponse>(GetUrl(LoginUrl), HttpMethod.Post, ct, new AlterDiceLoginRequest() { Email = this.LoginEmail, Password = Password }.AsDictionary(), false, false);
@@ -63,7 +69,7 @@ namespace AlterDice.Net
             }
         }
 
-      
+
         private Uri GetUrl(string endpoint)
         {
             return new Uri(BaseAddress + endpoint);
@@ -72,13 +78,13 @@ namespace AlterDice.Net
         public async Task<WebCallResult<AlterDiceOrderBook>> GetOrderBookAsync(string pair, CancellationToken ct = default)
         {
             var request = await SendRequest<AlterDiceOrderBookResponse>(GetUrl(FillPathParameter(OrderBookUrl, pair)), HttpMethod.Get, ct);
-            return Map<AlterDiceOrderBookResponse,AlterDiceOrderBook>(request);
+            return Map<AlterDiceOrderBookResponse, AlterDiceOrderBook>(request);
         }
-        private WebCallResult<TOut> Map<TIn, TOut>(WebCallResult<TIn> request) where TIn:AlterDiceBaseResponse<TOut>
+        private WebCallResult<TOut> Map<TIn, TOut>(WebCallResult<TIn> request) where TIn : AlterDiceBaseResponse<TOut>
         {
             if (request)
-            { 
-                return new WebCallResult<TOut>(request.ResponseStatusCode, request.ResponseHeaders, request.Data.Response, request.Error); 
+            {
+                return new WebCallResult<TOut>(request.ResponseStatusCode, request.ResponseHeaders, request.Data.Response, request.Error);
             }
             else
             {
@@ -89,7 +95,7 @@ namespace AlterDice.Net
 
         public async Task<WebCallResult<long>> PlaceOrderAsync(AlterDicePlaceOrderRequest placeOrderRequest, CancellationToken ct = default)
         {
-            var request = await SendRequest<AlterDicePlaceOrderResponse>(GetUrl(PlaceOrderUrl), HttpMethod.Post, ct,placeOrderRequest.AsDictionary(),true,false);
+            var request = await SendRequest<AlterDicePlaceOrderResponse>(GetUrl(PlaceOrderUrl), HttpMethod.Post, ct, placeOrderRequest.AsDictionary(), true, false);
             return Map<AlterDicePlaceOrderResponse, long>(request);
         }
         public WebCallResult<long> PlaceOrder(AlterDicePlaceOrderRequest placeOrderRequest) => PlaceOrderAsync(placeOrderRequest).Result;
