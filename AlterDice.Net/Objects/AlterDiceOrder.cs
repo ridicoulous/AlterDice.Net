@@ -35,13 +35,13 @@ namespace AlterDice.Net.Objects
         [JsonProperty("price")]
         public decimal Price { get; set; }
 
-        [JsonProperty("time_create"),JsonConverter(typeof(TimestampConverter))]
+        [JsonProperty("time_create"),JsonConverter(typeof(TimestampSecondsConverter))]
         public DateTime CreatedAt { get; set; }
 
-        [JsonProperty("time_done"), JsonConverter(typeof(TimestampConverter))]
-        public DateTime ExecutedAt { get; set; }
+        [JsonProperty("time_done"), JsonConverter(typeof(TimestampSecondsConverter))]
+        public DateTime? ExecutedAt { get; set; }
 
         [JsonProperty("price_done")]
-        public decimal PriceDone { get; set; }
+        public decimal? PriceDone { get; set; }
     }
 }

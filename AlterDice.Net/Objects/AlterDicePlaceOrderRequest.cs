@@ -24,6 +24,7 @@ namespace AlterDice.Net.Objects
         public decimal? Price { get; set; }
         [JsonProperty("volume")]
         public decimal Quantity { get; set; }
+        [JsonProperty("pair")]
         public string Symbol { get; set; }
 
     }

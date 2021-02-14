@@ -124,12 +124,12 @@ namespace AlterDice.Net
 
         public WebCallResult<AlterDiceOrder> CancelOrder(long orderId) => CancelOrderAsync(orderId).Result;
 
-        public async Task<WebCallResult<List<AlterDiceCurrencyResult>>> GetBalancesAsync(CancellationToken ct = default)
+        public async Task<WebCallResult<List<AlterDiceBalance>>> GetBalancesAsync(CancellationToken ct = default)
         {
             var request = await SendRequest<AlterDiceBalancesResponse>(GetUrl(BalancesUrl), HttpMethod.Post, ct, new AlterDiceAuthenticatedRequest().AsDictionary(), true, false);
-            return new WebCallResult<List<AlterDiceCurrencyResult>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.Result, request.Error);
+            return new WebCallResult<List<AlterDiceBalance>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.Result, request.Error);
         }
 
-        public WebCallResult<List<AlterDiceCurrencyResult>> GetBalances() => GetBalancesAsync().Result;
+        public WebCallResult<List<AlterDiceBalance>> GetBalances() => GetBalancesAsync().Result;
     }
 }

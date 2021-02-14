@@ -12,15 +12,38 @@ namespace AlterDice.Net.Objects
     public class AlterDiceCurrenciesResult
     {
         [JsonProperty("list")]
-        public List<AlterDiceCurrencyResult> Result { get; set; }
+        public List<AlterDiceBalance> Result { get; set; }
     }
-    public class AlterDiceCurrencyResult
+    public class AlterDiceBalance
     {
+        private decimal _balance;
+        private decimal _balanceAvailable;
+
         [JsonProperty("balance")]
-        public decimal Balance { get; set; }
+        public decimal Balance 
+        { 
+            get
+            {
+                return _balance;
+            }
+            set 
+            {
+                _balance = value / 1e8m;
+            }
+        }
 
         [JsonProperty("balance_available")]
-        public decimal BalanceAvailable { get; set; }
+        public decimal BalanceAvailable
+        {
+            get
+            {
+                return _balanceAvailable;
+            }
+            set
+            {
+                _balanceAvailable = value / 1e8m;
+            }
+        }
 
         [JsonProperty("currency")]
         public AlterDiceCurrency Currency { get; set; }

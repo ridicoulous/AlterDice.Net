@@ -22,6 +22,8 @@ namespace AlterDice.Net.Helpers
                 var props = source.GetType().GetProperties(bindingAttr);
                 foreach (var p in props)
                 {
+                    if (p.IsDefined(typeof(JsonIgnoreAttribute)))
+                        continue;
                     string key = p.Name;
                     if (p.IsDefined(typeof(JsonPropertyAttribute)))
                     {
