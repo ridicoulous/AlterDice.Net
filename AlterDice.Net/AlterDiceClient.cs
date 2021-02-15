@@ -35,6 +35,9 @@ namespace AlterDice.Net
         public AlterDiceClient(string login, string pass) : this("AlterDiceClient", new AlterDiceClientOptions(login, pass), null)
         {
         }
+        public AlterDiceClient(string login, string pass, AlterDiceClientOptions opts) : this("AlterDiceClient", opts, null)
+        {
+        }
 
         public AlterDiceClient(AlterDiceClientOptions exchangeOptions, AlterDiceAuthenticationProvider authenticationProvider) : this("AlterDiceClient", exchangeOptions, authenticationProvider)
         {
