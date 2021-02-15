@@ -21,8 +21,8 @@ namespace AlterDice.Net.Interfaces
         WebCallResult<AlterDiceOrder> GetOrder(long orderId);
         Task<WebCallResult<AlterDiceOrder>> CancelOrderAsync(long orderId, CancellationToken ct = default);
         WebCallResult<AlterDiceOrder> CancelOrder(long orderId);
-        Task<WebCallResult<List<AlterDiceOrder>>> GetActiveOrdersHistoryAsync(CancellationToken ct = default);
-        WebCallResult<List<AlterDiceOrder>> GetActiveOrdersHistory();
+        Task<WebCallResult<List<AlterDiceOrder>>> GetOrdersHistoryAsync(CancellationToken ct = default);
+        WebCallResult<List<AlterDiceOrder>> GetOrdersHistory();
         Task<WebCallResult<List<AlterDiceBalance>>> GetBalancesAsync(CancellationToken ct = default);
         WebCallResult<List<AlterDiceBalance>> GetBalances();
 
