@@ -1,8 +1,10 @@
 ﻿using AlterDice.Net.Interfaces;
+using AlterDice.Net.Objects.Socket;
 using CryptoExchange.Net;
 using CryptoExchange.Net.Authentication;
 using CryptoExchange.Net.Objects;
 using CryptoExchange.Net.Sockets;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SocketIOClient;
 using System;
@@ -40,7 +42,8 @@ namespace AlterDice.Net
             _socketIo.On("message", (data) =>
             {
                 Console.WriteLine(data);
-                OnOrderBookUpdate?.Invoke(data);
+                var t = JsonConvert.DeserializeObject<List<List<AlterDiceSocketOrderBookUpdateEvent>>>(data.ToString());
+                OnOrderBookUpdate?.Invoke(t[0][0]);
             });
 
             _socketIo.ConnectAsync().GetAwaiter().GetResult();
@@ -61,13 +64,18 @@ namespace AlterDice.Net
             throw new NotImplementedException();
         }
 
-        public event Action<object> OnOrderBookUpdate;
+        public event Action<AlterDiceSocketOrderBookUpdateEvent> OnOrderBookUpdate;
+        private class SubscribeRequest
+        {
+            public string type { get; set; } = "book";
+            public string @event { get; set; } = "book_7871";
 
+        }
         public async Task SubscribeToBook(string pair)
         {
-           
+          // object s = new object() { type="book" }
             //_socketIo.Socket.SendMessageAsync("{type: 'book', event: 'book_7871'}");
-         await   _socketIo.EmitAsync("subscribe", "{\"type\": \"book\", \"event\": \"book_3051\"}");
+         await   _socketIo.EmitAsync("subscribe", new SubscribeRequest());
           //  _socketIo.Socket.SendMessageAsync("");
         }
 

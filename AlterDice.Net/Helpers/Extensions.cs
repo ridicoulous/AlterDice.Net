@@ -9,6 +9,14 @@ namespace AlterDice.Net.Helpers
 {
     public static class Extensions
     {
+        public static decimal? Normalize(this decimal? value)
+        {
+            if (value == null)
+            {
+                return value;
+            }
+            return value / 1.000000000000000000000000000000000m;
+        }
         public static Dictionary<string, object> AsDictionary(this object source,
           BindingFlags bindingAttr = BindingFlags.FlattenHierarchy |
           BindingFlags.Instance |
@@ -39,7 +47,10 @@ namespace AlterDice.Net.Helpers
                     {
                         value = value.ToString().ToLowerInvariant();
                     }
-                   
+                    if (value is decimal || value is decimal?)
+                    {
+                       value= (value as decimal?).Normalize();
+                    }
                     if (value.GetType().IsEnum)
                     {
                         value = value?.ToString();

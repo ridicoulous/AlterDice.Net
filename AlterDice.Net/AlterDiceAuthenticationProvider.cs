@@ -48,7 +48,7 @@ namespace AlterDice.Net
             result.Add("login-token", Credentials.Key.GetString());
            // result.Add("X-Auth-Token", Credentials.Key.GetString());
             var dataToSign = CreateAuthPayload(parameters);
-            var signedData = Sign(dataToSign);
+            var signedData = Sign(dataToSign);            
             result.Add("X-Auth-Sign", signedData);
             return result;
         }
@@ -83,6 +83,8 @@ namespace AlterDice.Net
         }
         public string CreateAuthPayload(Dictionary<string, object> parameters)
         {
+            Console.WriteLine($"{JsonConvert.SerializeObject(parameters)}");
+            Console.WriteLine(String.Join("", parameters.OrderBy(p => p.Key).Select(p => p.Value)));
             return $"{String.Join("", parameters.OrderBy(p => p.Key).Select(p => p.Value))}{Credentials.Secret.GetString()}";
         }
 

@@ -28,23 +28,30 @@ namespace AlterDice.Net
             timer = new System.Timers.Timer(options.Timeout);
             timer.Elapsed += T_Elapsed;
             _socket = new AlterDiceSocketClient("asd",new SocketClientOptions("https://socket.alterdice.com"),new AlterDiceAuthenticationProvider(new CryptoExchange.Net.Authentication.ApiCredentials("42","42")));
+            _socket.OnOrderBookUpdate += _socket_OnOrderBookUpdate1;
         }
+
+        private void _socket_OnOrderBookUpdate1(object obj)
+        {
+            
+        }
+
         private CancellationTokenSource cts = new CancellationTokenSource();
 
         private void T_Elapsed(object sender, ElapsedEventArgs e)
         {
-            cts.Cancel();
-            cts = new CancellationTokenSource();
+            //cts.Cancel();
+            //cts = new CancellationTokenSource();
 
-            Task.Run(async () => await GetAndSetBook(cts.Token), cts.Token);
+            Task.Run(async () => await GetAndSetBook());
         }
 
-        private async Task<CallResult<bool>> GetAndSetBook(CancellationToken ct)
+        private async Task<CallResult<bool>> GetAndSetBook()
         {
             try
             {
-                ct.ThrowIfCancellationRequested();
-                var book = await _apiClient.GetOrderBookAsync(Symbol, ct);
+                //ct.ThrowIfCancellationRequested();
+                var book = await _apiClient.GetOrderBookAsync(Symbol);
                 if (book)
                 {
                     SetInitialOrderBook(DateTime.UtcNow.Ticks, book.Data.Bids, book.Data.Asks);
@@ -67,23 +74,22 @@ namespace AlterDice.Net
 
         protected override async Task<CallResult<bool>> DoResync()
         {
-            cts.Cancel();
-            cts = new CancellationTokenSource();            
-            return  await GetAndSetBook(cts.Token);
+               
+            return  await GetAndSetBook();
         }
 
         protected override async Task<CallResult<UpdateSubscription>> DoStart()
         {
             //_socket.OnOrderBookUpdate += _socket_OnOrderBookUpdate;
             WebsocketFactory wf = new WebsocketFactory();
-            timer.Start();
+            //  timer.Start();
+            
+            await _socket.SubscribeToBook("sd");
+
             return new CallResult<UpdateSubscription>(new UpdateSubscription(new FakeConnection(_socket, wf.CreateWebsocket(log, "wss://echo.websocket.org")), null), null);
         }
 
-        private void _socket_OnOrderBookUpdate(object obj)
-        {
-
-        }
+   
 
         public class FakeConnection : SocketConnection
         {
