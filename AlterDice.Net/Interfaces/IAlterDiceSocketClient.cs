@@ -9,6 +9,6 @@ namespace AlterDice.Net.Interfaces
     public interface IAlterDiceSocketClient
     {
         event Action<AlterDiceSocketOrderBookUpdateEvent> OnOrderBookUpdate;
-        Task SubscribeToBook(string pair);
+        Task SubscribeToBook(int symbolId);
     }
 }

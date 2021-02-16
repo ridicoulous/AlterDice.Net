@@ -35,7 +35,7 @@ namespace AlterDice.Net
         public AlterDiceClient(string login, string pass) : this("AlterDiceClient", new AlterDiceClientOptions(login, pass), null)
         {
         }
-        public AlterDiceClient(string login, string pass, AlterDiceClientOptions opts) : this("AlterDiceClient", opts, null)
+        public AlterDiceClient(AlterDiceClientOptions opts) : this("AlterDiceClient", opts, null)
         {
         }
 
@@ -100,8 +100,6 @@ namespace AlterDice.Net
         {
             var request = await SendRequest<AlterDicePlaceOrderResponse>(GetUrl(PlaceOrderUrl), HttpMethod.Post, ct, placeOrderRequest.AsDictionary(), true, false);
             return new WebCallResult<long>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.OrderId??0, request.Error);
-
-            //return Map<AlterDicePlaceOrderResponse, long>(request);
         }
         public WebCallResult<long> PlaceOrder(AlterDicePlaceOrderRequest placeOrderRequest) => PlaceOrderAsync(placeOrderRequest).Result;
         public async Task<WebCallResult<List<AlterDiceOrder>>> GetActiveOrdersAsync(CancellationToken ct = default)
@@ -127,13 +125,13 @@ namespace AlterDice.Net
 
         public WebCallResult<List<AlterDiceOrder>> GetOrdersHistory() => GetOrdersHistoryAsync().Result;
 
-        public async Task<WebCallResult<AlterDiceOrder>> CancelOrderAsync(long orderId, CancellationToken ct = default)
+        public async Task<WebCallResult<bool>> CancelOrderAsync(long orderId, CancellationToken ct = default)
         {
             var request = await SendRequest<AlterDiceGetOrderResponse>(GetUrl(CancelOrderUrl), HttpMethod.Post, ct, new AlterDiceGetOrderRequest(orderId).AsDictionary(), true, false);
-            return Map<AlterDiceGetOrderResponse, AlterDiceOrder>(request);
+            return new WebCallResult<bool>(request.ResponseStatusCode, request.ResponseHeaders, request, request.Error);
         }
 
-        public WebCallResult<AlterDiceOrder> CancelOrder(long orderId) => CancelOrderAsync(orderId).Result;
+        public WebCallResult<bool> CancelOrder(long orderId) => CancelOrderAsync(orderId).Result;
 
         public async Task<WebCallResult<List<AlterDiceBalance>>> GetBalancesAsync(CancellationToken ct = default)
         {

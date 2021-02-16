@@ -7,9 +7,12 @@ namespace AlterDice.Net
 {
     public class AlterDiceOrderBookOptions : OrderBookOptions
     {
-        public readonly int Timeout;
-        public AlterDiceOrderBookOptions(string name, int timeOutToGet) : base(name, false, false)
+        public readonly int? Timeout;
+        public readonly int SymbolId;
+
+        public AlterDiceOrderBookOptions(string name, int symbolId=0, int? timeOutToGet=null) : base(name, false, false)
         {
+            SymbolId = symbolId;
             Timeout = timeOutToGet;
         }
     }

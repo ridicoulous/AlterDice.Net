@@ -19,7 +19,7 @@ namespace AlterDice.Net
     {
         private readonly SocketIO _socketIo;
 
-        public AlterDiceSocketClient(string clientName, SocketClientOptions exchangeOptions, AuthenticationProvider authenticationProvider):base(clientName,exchangeOptions,authenticationProvider)
+        public AlterDiceSocketClient(string clientName, SocketClientOptions exchangeOptions, AuthenticationProvider authenticationProvider) : base(clientName, exchangeOptions, authenticationProvider)
         {
             //_socketIo = IO.Socket("https://socket.alterdice.com");
             //_socketIo.Connect();
@@ -28,7 +28,7 @@ namespace AlterDice.Net
             _socketIo.OnError += _socketIo_OnError;
             _socketIo.OnReceivedEvent += _socketIo_OnReceivedEvent;
             _socketIo.OnDisconnected += _socketIo_OnDisconnected;
-            
+
             _socketIo.On("hi", response =>
             {
                 string text = response.GetValue<string>();
@@ -41,7 +41,7 @@ namespace AlterDice.Net
             };
             _socketIo.On("message", (data) =>
             {
-                Console.WriteLine(data);
+                Console.WriteLine(data.ToString());
                 var t = JsonConvert.DeserializeObject<List<List<AlterDiceSocketOrderBookUpdateEvent>>>(data.ToString());
                 OnOrderBookUpdate?.Invoke(t[0][0]);
             });
@@ -51,45 +51,53 @@ namespace AlterDice.Net
 
         private void _socketIo_OnDisconnected(object sender, string e)
         {
-            throw new NotImplementedException();
+            log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"Socket.io client disconnected: {e}");
         }
 
         private void _socketIo_OnReceivedEvent(object sender, SocketIOClient.EventArguments.ReceivedEventArgs e)
-        {
-            Console.WriteLine($"Received {e.Event}: {e.Response}");
+        {            
+            log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"Socket.io Received {e.Event}: {e.Response}");
         }
 
         private void _socketIo_OnError(object sender, string e)
         {
-            throw new NotImplementedException();
+            log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"Socket.io client error: {e}");
         }
 
         public event Action<AlterDiceSocketOrderBookUpdateEvent> OnOrderBookUpdate;
         private class SubscribeRequest
         {
-            public string type { get; set; } = "book";
-            public string @event { get; set; } = "book_7871";
+            public SubscribeRequest()
+            {
+
+            }
+            public SubscribeRequest(string eventType, int symbolId)
+            {
+                type = eventType;
+                @event = $"{eventType}_{symbolId}";
+            }
+            public string type { get; set; } 
+            public string @event { get; set; } 
 
         }
-        public async Task SubscribeToBook(string pair)
+        public async Task SubscribeToBook(int symbolId)
         {
-          // object s = new object() { type="book" }
-            //_socketIo.Socket.SendMessageAsync("{type: 'book', event: 'book_7871'}");
-         await   _socketIo.EmitAsync("subscribe", new SubscribeRequest());
-          //  _socketIo.Socket.SendMessageAsync("");
+            log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"Subscribing to bookId {symbolId}");
+
+            await _socketIo.EmitAsync("subscribe", new SubscribeRequest("book",symbolId));          
         }
 
         private void _socketIo_OnConnected(object sender, EventArgs e)
         {
-            Console.WriteLine("Connected");
+           log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug,"Socket.io client was connected");
         }
 
         protected override async Task<CallResult<bool>> AuthenticateSocket(SocketConnection s)
         {
-            return new CallResult<bool>(false,null);
+            return new CallResult<bool>(false, null);
         }
 
-        protected override bool HandleQueryResponse<T>(SocketConnection s, object request, JToken data,  out CallResult<T> callResult)
+        protected override bool HandleQueryResponse<T>(SocketConnection s, object request, JToken data, out CallResult<T> callResult)
         {
             throw new NotImplementedException();
         }

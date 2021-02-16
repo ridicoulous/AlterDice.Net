@@ -10,39 +10,48 @@ using CryptoExchange.Net;
 using CryptoExchange.Net.Interfaces;
 using System.Timers;
 using System.Threading;
+using CryptoExchange.Net.Logging;
 
 namespace AlterDice.Net
 {
     public class AlterDiceSymbolOrderBook : SymbolOrderBook
     {
-        private readonly System.Timers.Timer timer;
+        private readonly System.Timers.Timer _timer;
         private readonly AlterDiceSocketClient _socket;
         private readonly AlterDiceClient _apiClient;
+        private readonly bool _shouldUseApi;
+        private readonly int _symbolId;
         public AlterDiceSymbolOrderBook(string symbol, AlterDiceClient client, AlterDiceOrderBookOptions opts) : this(symbol, opts)
         {
             _apiClient = client;
         }
         public AlterDiceSymbolOrderBook(string symbol, AlterDiceOrderBookOptions options) : base(symbol, options)
         {
+            _symbolId = options.SymbolId;
             _apiClient = new AlterDiceClient();
-            timer = new System.Timers.Timer(options.Timeout);
-            timer.Elapsed += T_Elapsed;
-            _socket = new AlterDiceSocketClient("asd",new SocketClientOptions("https://socket.alterdice.com"),new AlterDiceAuthenticationProvider(new CryptoExchange.Net.Authentication.ApiCredentials("42","42")));
+            if (options.SymbolId == 0 && options.Timeout.HasValue)
+            {
+                _shouldUseApi = true;
+                _timer = new System.Timers.Timer(options.Timeout.Value);
+                _timer.Elapsed += T_Elapsed;
+            }
+
+            _socket = new AlterDiceSocketClient("asd", new SocketClientOptions("https://socket.alterdice.com") 
+            {  
+                LogVerbosity=CryptoExchange.Net.Logging.LogVerbosity.Debug,
+                LogWriters = new System.Collections.Generic.List<System.IO.TextWriter>() { new ThreadSafeFileWriter("socket.txt"), new DebugTextWriter() },
+            }, 
+            new AlterDiceAuthenticationProvider(new CryptoExchange.Net.Authentication.ApiCredentials("42", "42")));
             _socket.OnOrderBookUpdate += _socket_OnOrderBookUpdate1;
         }
 
         private void _socket_OnOrderBookUpdate1(object obj)
         {
-            
-        }
 
-        private CancellationTokenSource cts = new CancellationTokenSource();
+        }
 
         private void T_Elapsed(object sender, ElapsedEventArgs e)
         {
-            //cts.Cancel();
-            //cts = new CancellationTokenSource();
-
             Task.Run(async () => await GetAndSetBook());
         }
 
@@ -50,7 +59,6 @@ namespace AlterDice.Net
         {
             try
             {
-                //ct.ThrowIfCancellationRequested();
                 var book = await _apiClient.GetOrderBookAsync(Symbol);
                 if (book)
                 {
@@ -74,22 +82,27 @@ namespace AlterDice.Net
 
         protected override async Task<CallResult<bool>> DoResync()
         {
-               
-            return  await GetAndSetBook();
+
+            return await GetAndSetBook();
         }
 
         protected override async Task<CallResult<UpdateSubscription>> DoStart()
         {
             //_socket.OnOrderBookUpdate += _socket_OnOrderBookUpdate;
             WebsocketFactory wf = new WebsocketFactory();
-            //  timer.Start();
-            
-            await _socket.SubscribeToBook("sd");
-
+            await GetAndSetBook();
+            if (_shouldUseApi)
+            {
+                _timer.Start();
+            }
+            else
+            {
+                await _socket.SubscribeToBook(_symbolId);
+            }
             return new CallResult<UpdateSubscription>(new UpdateSubscription(new FakeConnection(_socket, wf.CreateWebsocket(log, "wss://echo.websocket.org")), null), null);
         }
 
-   
+
 
         public class FakeConnection : SocketConnection
         {
