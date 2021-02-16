@@ -24,6 +24,31 @@ namespace AlterDice.Net
         private readonly AlterDiceClient _apiClient;
         private readonly bool _shouldUseApi;
         private readonly int _symbolId;
+        /// <summary>
+        /// The last used id
+        /// </summary>
+        protected static long lastId;
+        /// <summary>
+        /// Lock for id generating
+        /// </summary>
+        protected static object idLock = new object();
+        /// <summary>
+        /// Last is used
+        /// </summary>
+        public static long LastId => lastId;
+
+        /// <summary>
+        /// Generate a unique id
+        /// </summary>
+        /// <returns></returns>
+        protected long NextId()
+        {
+            lock (idLock)
+            {
+                lastId++;
+                return lastId;
+            }
+        }
         public AlterDiceSymbolOrderBook(string symbol, AlterDiceClient client, AlterDiceOrderBookOptions opts) : this(symbol, opts)
         {
             _apiClient = client;
@@ -39,10 +64,10 @@ namespace AlterDice.Net
                 _timer.Elapsed += T_Elapsed;
             }
 
-            _socket = new AlterDiceSocketClient("asd", new SocketClientOptions("https://socket.alterdice.com") 
+            _socket = new AlterDiceSocketClient("AlterDiceSocketBook", new SocketClientOptions("https://socket.alterdice.com") 
             {  
                 LogVerbosity=CryptoExchange.Net.Logging.LogVerbosity.Debug,
-                LogWriters = new System.Collections.Generic.List<System.IO.TextWriter>() { new ThreadSafeFileWriter("socket.txt"), new DebugTextWriter() },
+                LogWriters = new System.Collections.Generic.List<System.IO.TextWriter>() { new DebugTextWriter() },
             }, 
             new AlterDiceAuthenticationProvider(new CryptoExchange.Net.Authentication.ApiCredentials("42", "42")));
             _socket.OnOrderBookUpdate += _socket_OnOrderBookUpdate1;
@@ -50,9 +75,10 @@ namespace AlterDice.Net
 
         private void _socket_OnOrderBookUpdate1(AlterDiceSocketOrderBookUpdateEvent data)
         {
-            var bids = data.Data.Bids.Values.Select(c => new AlterDiceOrderBookEntry() { Count = (int)c.Count, Price = c.Rate / 1e8m, Quantity = c.Volume / 1e8m });
-            var asks = data.Data.Asks.Values.Select(c => new AlterDiceOrderBookEntry() { Count = (int)c.Count, Price = c.Rate / 1e8m, Quantity = c.Volume / 1e8m });
-            UpdateOrderBook(DateTime.UtcNow.Ticks, bids, asks);
+            var bids = data.Data.Bids.Values.Select(c => new AlterDiceOrderBookEntry() { Count = (int)c.Count, Price = c.Rate / 1e8m, Quantity = c.Volume / 1e8m }).ToList();
+            var asks = data.Data.Asks.Values.Select(c => new AlterDiceOrderBookEntry() { Count = (int)c.Count, Price = c.Rate / 1e8m, Quantity = c.Volume / 1e8m }).ToList();
+
+            UpdateOrderBook(LastId,NextId(), bids, asks);
         }
 
         private void T_Elapsed(object sender, ElapsedEventArgs e)

@@ -52,6 +52,7 @@ namespace AlterDice.Net
         private void _socketIo_OnDisconnected(object sender, string e)
         {
             log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"Socket.io client disconnected: {e}");
+            _socketIo.ConnectAsync().GetAwaiter().GetResult();
         }
 
         private void _socketIo_OnReceivedEvent(object sender, SocketIOClient.EventArguments.ReceivedEventArgs e)
