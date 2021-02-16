@@ -11,6 +11,9 @@ using CryptoExchange.Net.Interfaces;
 using System.Timers;
 using System.Threading;
 using CryptoExchange.Net.Logging;
+using AlterDice.Net.Objects.Socket;
+using System.Linq;
+using AlterDice.Net.Objects;
 
 namespace AlterDice.Net
 {
@@ -45,9 +48,11 @@ namespace AlterDice.Net
             _socket.OnOrderBookUpdate += _socket_OnOrderBookUpdate1;
         }
 
-        private void _socket_OnOrderBookUpdate1(object obj)
+        private void _socket_OnOrderBookUpdate1(AlterDiceSocketOrderBookUpdateEvent data)
         {
-
+            var bids = data.Data.Bids.Values.Select(c => new AlterDiceOrderBookEntry() { Count = (int)c.Count, Price = c.Rate / 1e8m, Quantity = c.Volume / 1e8m });
+            var asks = data.Data.Asks.Values.Select(c => new AlterDiceOrderBookEntry() { Count = (int)c.Count, Price = c.Rate / 1e8m, Quantity = c.Volume / 1e8m });
+            UpdateOrderBook(DateTime.UtcNow.Ticks, bids, asks);
         }
 
         private void T_Elapsed(object sender, ElapsedEventArgs e)

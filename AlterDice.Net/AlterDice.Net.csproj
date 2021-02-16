@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.5</Version>
+    <Version>0.0.6</Version>
     <PackageProjectUrl>https://github.com/ridicoulous/AlterDice.Net</PackageProjectUrl>
     <Copyright>ridicoulous</Copyright>
     <PackageReleaseNotes>2/15/2021 - introduced SymbolOrderBook through api client. Need to implement socket.io rooms 

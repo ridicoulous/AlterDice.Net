@@ -82,9 +82,7 @@ namespace AlterDice.Net
             }
         }
         public string CreateAuthPayload(Dictionary<string, object> parameters)
-        {
-            Console.WriteLine($"{JsonConvert.SerializeObject(parameters)}");
-            Console.WriteLine(String.Join("", parameters.OrderBy(p => p.Key).Select(p => p.Value)));
+        {           
             return $"{String.Join("", parameters.OrderBy(p => p.Key).Select(p => p.Value))}{Credentials.Secret.GetString()}";
         }
 

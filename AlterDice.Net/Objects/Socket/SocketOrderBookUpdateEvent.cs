@@ -24,9 +24,9 @@ namespace AlterDice.Net.Objects.Socket
     public  class AltertDiceSocketBookWrapper
     {
         [JsonProperty("sell")]
-        public Dictionary<long, AlterDiceOrderBookSide> Asks { get; set; }
+        public Dictionary<long, AlterDiceOrderBookSide> Asks { get; set; } = new Dictionary<long, AlterDiceOrderBookSide>();
         [JsonProperty("buy")]
-        public Dictionary<long, AlterDiceOrderBookSide> Bids { get; set; }
+        public Dictionary<long, AlterDiceOrderBookSide> Bids { get; set; } = new Dictionary<long, AlterDiceOrderBookSide>();
     }
 
     public  class AlterDiceOrderBookSide
