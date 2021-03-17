@@ -58,11 +58,8 @@ namespace AlterDice.ConsoleClient
                 {
                     break;
                 }
-
                 await Task.Delay(4500);
             }
-                    
-
             Console.ReadLine();
         }
         private static List<ISymbolOrderBookEntry> _lastAsks = new List<ISymbolOrderBookEntry>();

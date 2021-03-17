@@ -3,6 +3,7 @@ using AlterDice.Net.Interfaces;
 using AlterDice.Net.Objects;
 using CryptoExchange.Net;
 using CryptoExchange.Net.Authentication;
+using CryptoExchange.Net.ExchangeInterfaces;
 using CryptoExchange.Net.Objects;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace AlterDice.Net
 {
-    public class AlterDiceClient : RestClient, IAlterDiceClient
+    public class AlterDiceClient : RestClient, IAlterDiceClient, IExchangeClient
     {
         #region Endpoints
         private const string LoginUrl = "login";
@@ -99,7 +100,7 @@ namespace AlterDice.Net
         public async Task<WebCallResult<long>> PlaceOrderAsync(AlterDicePlaceOrderRequest placeOrderRequest, CancellationToken ct = default)
         {
             var request = await SendRequest<AlterDicePlaceOrderResponse>(GetUrl(PlaceOrderUrl), HttpMethod.Post, ct, placeOrderRequest.AsDictionary(), true, false);
-            return new WebCallResult<long>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.OrderId??0, request.Error);
+            return new WebCallResult<long>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.OrderId ?? 0, request.Error);
         }
         public WebCallResult<long> PlaceOrder(AlterDicePlaceOrderRequest placeOrderRequest) => PlaceOrderAsync(placeOrderRequest).Result;
         public async Task<WebCallResult<List<AlterDiceOrder>>> GetActiveOrdersAsync(CancellationToken ct = default)
@@ -140,5 +141,92 @@ namespace AlterDice.Net
         }
 
         public WebCallResult<List<AlterDiceBalance>> GetBalances() => GetBalancesAsync().Result;
+
+        public string GetSymbolName(string baseAsset, string quoteAsset)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<WebCallResult<IEnumerable<ICommonSymbol>>> GetSymbolsAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<WebCallResult<IEnumerable<ICommonTicker>>> GetTickersAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<WebCallResult<ICommonTicker>> GetTickerAsync(string symbol)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<WebCallResult<IEnumerable<ICommonKline>>> GetKlinesAsync(string symbol, TimeSpan timespan, DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        async Task<WebCallResult<ICommonOrderBook>> IExchangeClient.GetOrderBookAsync(string symbol)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<WebCallResult<IEnumerable<ICommonRecentTrade>>> GetRecentTradesAsync(string symbol)
+        {
+            throw new NotImplementedException();
+        }
+
+        async Task<WebCallResult<ICommonOrderId>> IExchangeClient.PlaceOrderAsync(string symbol, IExchangeClient.OrderSide side, IExchangeClient.OrderType type, decimal quantity, decimal? price = null, string accountId = null)
+        {
+            var placeOrderRequest = new AlterDicePlaceOrderRequest()
+            {
+                OrderSide = side == IExchangeClient.OrderSide.Buy ? AlterDiceOrderSide.Buy : AlterDiceOrderSide.Sell,
+                OrderType = type == IExchangeClient.OrderType.Limit ? AlterDiceOrderType.Limit : AlterDiceOrderType.Market,
+                Price = price,
+                Quantity = quantity,
+                Symbol = symbol
+            };
+            var request = await SendRequest<AlterDicePlaceOrderResponse>(GetUrl(PlaceOrderUrl), HttpMethod.Post, default, placeOrderRequest.AsDictionary(), true, false);
+
+            return new WebCallResult<ICommonOrderId>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response, request.Error);
+        }
+
+        public Task<WebCallResult<ICommonOrder>> GetOrderAsync(string orderId, string symbol = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<WebCallResult<IEnumerable<ICommonTrade>>> GetTradesAsync(string orderId, string symbol = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<WebCallResult<IEnumerable<ICommonOrder>>> GetOpenOrdersAsync(string symbol = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<WebCallResult<IEnumerable<ICommonOrder>>> GetClosedOrdersAsync(string symbol = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<WebCallResult<ICommonOrderId>> CancelOrderAsync(string orderId, string symbol = null)
+        {
+            var result = await CancelOrderAsync(long.Parse(orderId));
+            if (result)
+            {
+                return new WebCallResult<ICommonOrderId>(result.ResponseStatusCode, result.ResponseHeaders, new AlterDiceOrderResponse(long.Parse(orderId)), null);
+            }
+            return new WebCallResult<ICommonOrderId>(result.ResponseStatusCode, result.ResponseHeaders, null, result.Error);
+
+        }
+
+        async Task<WebCallResult<IEnumerable<ICommonBalance>>> IExchangeClient.GetBalancesAsync(string accountId = null)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

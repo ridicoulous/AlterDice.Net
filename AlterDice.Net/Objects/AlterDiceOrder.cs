@@ -1,4 +1,5 @@
 ﻿using CryptoExchange.Net.Converters;
+using CryptoExchange.Net.ExchangeInterfaces;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -6,7 +7,7 @@ using System.Text;
 
 namespace AlterDice.Net.Objects
 {
-    public class AlterDiceOrder
+    public class AlterDiceOrder:ICommonOrder,ICommonOrderId
     {
         [JsonProperty("id")]
         public long Id { get; set; }
@@ -43,5 +44,26 @@ namespace AlterDice.Net.Objects
 
         [JsonProperty("price_done")]
         public decimal? PriceDone { get; set; }
+
+        public string CommonId => Id.ToString();
+
+        public string CommonSymbol => Symbol;
+
+        public decimal CommonPrice => Price;
+
+        public decimal CommonQuantity => Quantity;
+
+        public string CommonStatus => Status.ToString();
+
+        public bool IsActive => Status == 0;
+
+        public IExchangeClient.OrderSide CommonSide => OrderSide == AlterDiceOrderSide.Buy ? IExchangeClient.OrderSide.Buy : IExchangeClient.OrderSide.Sell;
+
+        public IExchangeClient.OrderType CommonType => OrderType switch
+        {
+            AlterDiceOrderType.Limit => IExchangeClient.OrderType.Limit,
+            AlterDiceOrderType.Market => IExchangeClient.OrderType.Market,
+           _ => IExchangeClient.OrderType.Other          
+        };
     }
 }
