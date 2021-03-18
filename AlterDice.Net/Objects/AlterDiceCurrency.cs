@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CryptoExchange.Net.ExchangeInterfaces;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,7 +15,7 @@ namespace AlterDice.Net.Objects
         [JsonProperty("list")]
         public List<AlterDiceBalance> Result { get; set; }
     }
-    public class AlterDiceBalance
+    public class AlterDiceBalance : ICommonBalance
     {
         private decimal _balance;
         private decimal _balanceAvailable;
@@ -47,6 +48,12 @@ namespace AlterDice.Net.Objects
 
         [JsonProperty("currency")]
         public AlterDiceCurrency Currency { get; set; }
+
+        public string CommonAsset => Currency.ShortName;
+
+        public decimal CommonAvailable => BalanceAvailable;
+
+        public decimal CommonTotal => Balance;
     }
     public class AlterDiceCurrency
     {

@@ -225,7 +225,8 @@ namespace AlterDice.Net
 
         async Task<WebCallResult<IEnumerable<ICommonBalance>>> IExchangeClient.GetBalancesAsync(string accountId = null)
         {
-            throw new NotImplementedException();
+            var request = await SendRequest<AlterDiceBalancesResponse>(GetUrl(BalancesUrl), HttpMethod.Post, default, new AlterDiceAuthenticatedRequest().AsDictionary(), true, false);
+            return new WebCallResult<IEnumerable<ICommonBalance>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.Result, request.Error);
         }
 
     }

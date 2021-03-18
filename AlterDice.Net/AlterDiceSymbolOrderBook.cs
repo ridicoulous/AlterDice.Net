@@ -133,7 +133,7 @@ namespace AlterDice.Net
             return new CallResult<UpdateSubscription>(new UpdateSubscription(new FakeConnection(_socket, wf.CreateWebsocket(log, "wss://echo.websocket.org")), null), null);
         }
 
-
+        
 
         public class FakeConnection : SocketConnection
         {

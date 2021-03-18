@@ -27,39 +27,10 @@ namespace AlterDice.ConsoleClient
             });
             ob.OnOrderBookUpdate += Ob_OnOrderBookUpdate;
             ob.Start();
-            var hist = await ad.GetOrdersHistoryAsync();
+            Console.Read();
+           // var hist = await ad.GetOrdersHistoryAsync();
 
-            while (true)
-            {
-                var o = await ad.PlaceOrderAsync(new Net.Objects.AlterDicePlaceOrderRequest()
-                {
-                    OrderSide = Net.Objects.AlterDiceOrderSide.Sell,
-                    OrderType = Net.Objects.AlterDiceOrderType.Limit,
-                    Price = 0.00137002m,
-                    Quantity = 0.01388m,
-                    Symbol = "eexbtc"
-                });
-                if (o)
-                {
-                    Console.WriteLine($"{o.Data} placed");
-
-                    await Task.Delay(2500);
-                    var cancel = await ad.CancelOrderAsync(o.Data);
-                    if (!cancel)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{o.Data} canceled");
-                    }
-                }
-                else
-                {
-                    break;
-                }
-                await Task.Delay(4500);
-            }
+           
             Console.ReadLine();
         }
         private static List<ISymbolOrderBookEntry> _lastAsks = new List<ISymbolOrderBookEntry>();
