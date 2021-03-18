@@ -187,9 +187,12 @@ namespace AlterDice.Net
                 Quantity = quantity,
                 Symbol = symbol
             };
-            var request = await SendRequest<AlterDicePlaceOrderResponse>(GetUrl(PlaceOrderUrl), HttpMethod.Post, default, placeOrderRequest.AsDictionary(), true, false);
+           // var request = await SendRequest<AlterDicePlaceOrderResponse>(GetUrl(PlaceOrderUrl), HttpMethod.Post, default, placeOrderRequest.AsDictionary(), true, false);
+            var request = await PlaceOrderAsync(placeOrderRequest);
+            if(request)
+                return new WebCallResult<ICommonOrderId>(request.ResponseStatusCode, request.ResponseHeaders, new AlterDiceOrderResponse() { OrderId=request.Data}, request.Error);
+                return new WebCallResult<ICommonOrderId>(request.ResponseStatusCode, request.ResponseHeaders, null, request.Error);
 
-            return new WebCallResult<ICommonOrderId>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response, request.Error);
         }
 
         public Task<WebCallResult<ICommonOrder>> GetOrderAsync(string orderId, string symbol = null)
