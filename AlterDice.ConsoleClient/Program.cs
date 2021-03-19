@@ -19,6 +19,7 @@ namespace AlterDice.ConsoleClient
                 LogWriters = new System.Collections.Generic.List<System.IO.TextWriter>() { new ThreadSafeFileWriter("log.txt"), new DebugTextWriter() },
                 LogVerbosity = LogVerbosity.Debug
             });
+
             var ob = new AlterDiceSymbolOrderBook("BTCUSDT", ad, new AlterDiceOrderBookOptions("42", 3051)
             {
                 LogWriters = new System.Collections.Generic.List<System.IO.TextWriter>() { new ThreadSafeFileWriter("orderbook.txt"), new DebugTextWriter() },

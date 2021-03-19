@@ -169,7 +169,8 @@ namespace AlterDice.Net
 
         async Task<WebCallResult<ICommonOrderBook>> IExchangeClient.GetOrderBookAsync(string symbol)
         {
-            throw new NotImplementedException();
+            var book = await GetOrderBookAsync(symbol);
+            return WebCallResult<ICommonOrderBook>.CreateFrom(book);
         }
 
         public Task<WebCallResult<IEnumerable<ICommonRecentTrade>>> GetRecentTradesAsync(string symbol)
@@ -187,17 +188,22 @@ namespace AlterDice.Net
                 Quantity = quantity,
                 Symbol = symbol
             };
-           // var request = await SendRequest<AlterDicePlaceOrderResponse>(GetUrl(PlaceOrderUrl), HttpMethod.Post, default, placeOrderRequest.AsDictionary(), true, false);
             var request = await PlaceOrderAsync(placeOrderRequest);
             if(request)
                 return new WebCallResult<ICommonOrderId>(request.ResponseStatusCode, request.ResponseHeaders, new AlterDiceOrderResponse() { OrderId=request.Data}, request.Error);
-                return new WebCallResult<ICommonOrderId>(request.ResponseStatusCode, request.ResponseHeaders, null, request.Error);
 
+            return WebCallResult<ICommonOrderId>.CreateErrorResult(request.Error);
         }
 
-        public Task<WebCallResult<ICommonOrder>> GetOrderAsync(string orderId, string symbol = null)
+        async Task<WebCallResult<ICommonOrder>> IExchangeClient.GetOrderAsync(string orderId, string symbol = null)
         {
-            throw new NotImplementedException();
+            long id;
+            if (long.TryParse(orderId,out id))
+            {
+                var order = await GetOrderAsync(id);
+                return WebCallResult<ICommonOrder>.CreateFrom(order);
+            }
+            return WebCallResult<ICommonOrder>.CreateErrorResult(new ServerError($"Can not parse orderId {orderId}"));
         }
 
         public Task<WebCallResult<IEnumerable<ICommonTrade>>> GetTradesAsync(string orderId, string symbol = null)
@@ -223,7 +229,6 @@ namespace AlterDice.Net
                 return new WebCallResult<ICommonOrderId>(result.ResponseStatusCode, result.ResponseHeaders, new AlterDiceOrderResponse(long.Parse(orderId)), null);
             }
             return new WebCallResult<ICommonOrderId>(result.ResponseStatusCode, result.ResponseHeaders, null, result.Error);
-
         }
 
         async Task<WebCallResult<IEnumerable<ICommonBalance>>> IExchangeClient.GetBalancesAsync(string accountId = null)
