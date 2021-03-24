@@ -15,7 +15,7 @@ namespace AlterDice.Net.Helpers
             {
                 return value;
             }
-            return value / 1.000000000000000000000000000000000m;
+            return decimal.Round(value ?? 0, 7) / 1.000000000000000000000000000000000m;
         }
         public static Dictionary<string, object> AsDictionary(this object source,
           BindingFlags bindingAttr = BindingFlags.FlattenHierarchy |
@@ -49,7 +49,7 @@ namespace AlterDice.Net.Helpers
                     }
                     if (value is decimal || value is decimal?)
                     {
-                       value= (value as decimal?).Normalize();
+                        value = (value as decimal?).Normalize();
                     }
                     if (value.GetType().IsEnum)
                     {
