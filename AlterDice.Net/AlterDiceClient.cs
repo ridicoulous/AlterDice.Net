@@ -7,6 +7,7 @@ using CryptoExchange.Net.ExchangeInterfaces;
 using CryptoExchange.Net.Objects;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -144,7 +145,7 @@ namespace AlterDice.Net
 
         public string GetSymbolName(string baseAsset, string quoteAsset)
         {
-            throw new NotImplementedException();
+            return baseAsset + quoteAsset;
         }
 
         public Task<WebCallResult<IEnumerable<ICommonSymbol>>> GetSymbolsAsync()
@@ -173,7 +174,7 @@ namespace AlterDice.Net
             return WebCallResult<ICommonOrderBook>.CreateFrom(book);
         }
 
-        public Task<WebCallResult<IEnumerable<ICommonRecentTrade>>> GetRecentTradesAsync(string symbol)
+        public async Task<WebCallResult<IEnumerable<ICommonRecentTrade>>> GetRecentTradesAsync(string symbol)
         {
             throw new NotImplementedException();
         }
@@ -189,8 +190,8 @@ namespace AlterDice.Net
                 Symbol = symbol
             };
             var request = await PlaceOrderAsync(placeOrderRequest);
-            if(request)
-                return new WebCallResult<ICommonOrderId>(request.ResponseStatusCode, request.ResponseHeaders, new AlterDiceOrderResponse() { OrderId=request.Data}, request.Error);
+            if (request)
+                return new WebCallResult<ICommonOrderId>(request.ResponseStatusCode, request.ResponseHeaders, new AlterDiceOrderResponse() { OrderId = request.Data }, request.Error);
 
             return WebCallResult<ICommonOrderId>.CreateErrorResult(request.Error);
         }
@@ -198,7 +199,7 @@ namespace AlterDice.Net
         async Task<WebCallResult<ICommonOrder>> IExchangeClient.GetOrderAsync(string orderId, string symbol = null)
         {
             long id;
-            if (long.TryParse(orderId,out id))
+            if (long.TryParse(orderId, out id))
             {
                 var order = await GetOrderAsync(id);
                 return WebCallResult<ICommonOrder>.CreateFrom(order);
@@ -211,14 +212,36 @@ namespace AlterDice.Net
             throw new NotImplementedException();
         }
 
-        public Task<WebCallResult<IEnumerable<ICommonOrder>>> GetOpenOrdersAsync(string symbol = null)
+        public async Task<WebCallResult<IEnumerable<ICommonOrder>>> GetOpenOrdersAsync(string symbol = null)
         {
-            throw new NotImplementedException();
+            var orders = await GetActiveOrdersAsync();
+
+            if (!orders)
+            {
+                return WebCallResult<IEnumerable<ICommonOrder>>.CreateErrorResult(orders.Error);
+            }
+            var result = orders.Data;
+            if (!String.IsNullOrEmpty(symbol))
+            {
+                result = result.Where(c => c.Symbol == symbol).ToList();
+            }
+            return new WebCallResult<IEnumerable<ICommonOrder>>(orders.ResponseStatusCode, orders.ResponseHeaders, result, null);
         }
 
-        public Task<WebCallResult<IEnumerable<ICommonOrder>>> GetClosedOrdersAsync(string symbol = null)
+        public async Task<WebCallResult<IEnumerable<ICommonOrder>>> GetClosedOrdersAsync(string symbol = null)
         {
-            throw new NotImplementedException();
+            var orders = await GetOrdersHistoryAsync();
+
+            if (!orders)
+            {
+                return WebCallResult<IEnumerable<ICommonOrder>>.CreateErrorResult(orders.Error);
+            }
+            var result = orders.Data;
+            if (!String.IsNullOrEmpty(symbol))
+            {
+                result = result.Where(c => c.Symbol == symbol).ToList();
+            }
+            return new WebCallResult<IEnumerable<ICommonOrder>>(orders.ResponseStatusCode, orders.ResponseHeaders, result, null);
         }
 
         public async Task<WebCallResult<ICommonOrderId>> CancelOrderAsync(string orderId, string symbol = null)
