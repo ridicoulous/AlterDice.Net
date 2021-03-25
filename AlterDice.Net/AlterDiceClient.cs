@@ -129,7 +129,8 @@ namespace AlterDice.Net
 
         public async Task<WebCallResult<bool>> CancelOrderAsync(long orderId, CancellationToken ct = default)
         {
-            var request = await SendRequest<AlterDiceGetOrderResponse>(GetUrl(CancelOrderUrl), HttpMethod.Post, ct, new AlterDiceGetOrderRequest(orderId).AsDictionary(), true, false);
+            var request = await SendRequest<AlterDiceGetOrderResponse>(GetUrl(CancelOrderUrl), HttpMethod.Post, ct, new AlterDiceGetOrderRequest(orderId).AsDictionary(), true, false);           
+           
             return new WebCallResult<bool>(request.ResponseStatusCode, request.ResponseHeaders, request, request.Error);
         }
 
@@ -207,12 +208,12 @@ namespace AlterDice.Net
             return WebCallResult<ICommonOrder>.CreateErrorResult(new ServerError($"Can not parse orderId {orderId}"));
         }
 
-        public Task<WebCallResult<IEnumerable<ICommonTrade>>> GetTradesAsync(string orderId, string symbol = null)
+        async Task<WebCallResult<IEnumerable<ICommonTrade>>> IExchangeClient.GetTradesAsync(string orderId, string symbol = null)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<WebCallResult<IEnumerable<ICommonOrder>>> GetOpenOrdersAsync(string symbol = null)
+        async Task<WebCallResult<IEnumerable<ICommonOrder>>> IExchangeClient.GetOpenOrdersAsync(string symbol = null)
         {
             var orders = await GetActiveOrdersAsync();
 
@@ -228,7 +229,7 @@ namespace AlterDice.Net
             return new WebCallResult<IEnumerable<ICommonOrder>>(orders.ResponseStatusCode, orders.ResponseHeaders, result, null);
         }
 
-        public async Task<WebCallResult<IEnumerable<ICommonOrder>>> GetClosedOrdersAsync(string symbol = null)
+        async Task<WebCallResult<IEnumerable<ICommonOrder>>> IExchangeClient.GetClosedOrdersAsync(string symbol = null)
         {
             var orders = await GetOrdersHistoryAsync();
 
@@ -244,10 +245,10 @@ namespace AlterDice.Net
             return new WebCallResult<IEnumerable<ICommonOrder>>(orders.ResponseStatusCode, orders.ResponseHeaders, result, null);
         }
 
-        public async Task<WebCallResult<ICommonOrderId>> CancelOrderAsync(string orderId, string symbol = null)
+        async Task<WebCallResult<ICommonOrderId>> IExchangeClient.CancelOrderAsync(string orderId, string symbol = null)
         {
             var result = await CancelOrderAsync(long.Parse(orderId));
-            if (result)
+            if (result || (!result && result.Error.Message.Contains("Order not found")))
             {
                 return new WebCallResult<ICommonOrderId>(result.ResponseStatusCode, result.ResponseHeaders, new AlterDiceOrderResponse(long.Parse(orderId)), null);
             }
