@@ -30,10 +30,10 @@ namespace AlterDice.Net.Objects
         [JsonProperty("volume_done")]
         public decimal QuantityDone { get; set; }
 
-        [JsonProperty("rate")]
-        public decimal Rate { get; set; }
-
         [JsonProperty("price")]
+        public decimal QuoteQuantity { get; set; }
+
+        [JsonProperty("rate")]
         public decimal Price { get; set; }
 
         [JsonProperty("time_create"),JsonConverter(typeof(TimestampSecondsConverter))]
