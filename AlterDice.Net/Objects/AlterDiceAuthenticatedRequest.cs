@@ -13,7 +13,9 @@ namespace AlterDice.Net.Objects
             Page = page;
             Limit = limit;
         }
+        [JsonProperty("page")]
         public int Page { get; set; }
+        [JsonProperty("limit")]
         public int Limit { get; set; }
     }
     public class AlterDiceAuthenticatedRequest : IAlterDiceAuthenticatedRequest

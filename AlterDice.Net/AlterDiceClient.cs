@@ -272,6 +272,11 @@ namespace AlterDice.Net
                 var orders = await GetOrdersHistoryAsync(startPage);
                 if (orders)
                 {
+                    if (result.Select(i => i.Id).Intersect(orders.Data.Orders.Select(f => f.Id)).Any())
+                    {
+                        log.Write(CryptoExchange.Net.Logging.LogVerbosity.Error, "Obtained the same orders");
+                        break;
+                    }
                     result.AddRange(orders.Data.Orders);
                     if (limit.HasValue && limit.Value <= result.Count)
                     {
