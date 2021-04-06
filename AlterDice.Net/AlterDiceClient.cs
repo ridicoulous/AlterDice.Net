@@ -122,6 +122,7 @@ namespace AlterDice.Net
         public async Task<WebCallResult<AlterDiceGetOrdersResult>> GetOrdersHistoryAsync(int page = 1, int limit = 2000, CancellationToken ct = default)
         {
             var request = await SendRequest<AlterDiceGetOrdersResponse>(GetUrl(OrdersHistoryUrl), HttpMethod.Post, ct, new AlterDicePagedAuthenticatedRequest(page, limit).AsDictionary(), true, false);
+
             return new WebCallResult<AlterDiceGetOrdersResult>(request.ResponseStatusCode, request.ResponseHeaders, request ? new AlterDiceGetOrdersResult(request.Data?.Response?.Pagination, request.Data?.Response?.Orders) : null, request.Error);
         }
 
@@ -180,7 +181,7 @@ namespace AlterDice.Net
             throw new NotImplementedException();
         }
 
-        async Task<WebCallResult<ICommonOrderId>> IExchangeClient.PlaceOrderAsync(string symbol, IExchangeClient.OrderSide side, IExchangeClient.OrderType type, decimal quantity, decimal? price = null, string accountId = null)
+        public async Task<WebCallResult<ICommonOrderId>> PlaceOrderAsync(string symbol, IExchangeClient.OrderSide side, IExchangeClient.OrderType type, decimal quantity, decimal? price = null, string accountId = null)
         {
             var placeOrderRequest = new AlterDicePlaceOrderRequest()
             {
@@ -197,7 +198,7 @@ namespace AlterDice.Net
             return WebCallResult<ICommonOrderId>.CreateErrorResult(request.Error);
         }
 
-        async Task<WebCallResult<ICommonOrder>> IExchangeClient.GetOrderAsync(string orderId, string symbol = null)
+        public async Task<WebCallResult<ICommonOrder>> GetOrderAsync(string orderId, string symbol = null)
         {
             long id;
             if (long.TryParse(orderId, out id))
@@ -208,12 +209,12 @@ namespace AlterDice.Net
             return WebCallResult<ICommonOrder>.CreateErrorResult(new ServerError($"Can not parse orderId {orderId}"));
         }
 
-        async Task<WebCallResult<IEnumerable<ICommonTrade>>> IExchangeClient.GetTradesAsync(string orderId, string symbol = null)
+        public async Task<WebCallResult<IEnumerable<ICommonTrade>>> GetTradesAsync(string orderId, string symbol = null)
         {
             throw new NotImplementedException();
         }
 
-        async Task<WebCallResult<IEnumerable<ICommonOrder>>> IExchangeClient.GetOpenOrdersAsync(string symbol = null)
+        public async Task<WebCallResult<IEnumerable<ICommonOrder>>> GetOpenOrdersAsync(string symbol = null)
         {
             var orders = await GetActiveOrdersAsync();
 
@@ -229,7 +230,7 @@ namespace AlterDice.Net
             return new WebCallResult<IEnumerable<ICommonOrder>>(orders.ResponseStatusCode, orders.ResponseHeaders, result, null);
         }
 
-        async Task<WebCallResult<IEnumerable<ICommonOrder>>> IExchangeClient.GetClosedOrdersAsync(string symbol = null)
+        public async Task<WebCallResult<IEnumerable<ICommonOrder>>> GetClosedOrdersAsync(string symbol = null)
         {
             var orders = await GetAllOrdersHistoryAsync();
 
@@ -245,7 +246,7 @@ namespace AlterDice.Net
             return new WebCallResult<IEnumerable<ICommonOrder>>(orders.ResponseStatusCode, orders.ResponseHeaders, result, null);
         }
 
-        async Task<WebCallResult<ICommonOrderId>> IExchangeClient.CancelOrderAsync(string orderId, string symbol = null)
+        public async Task<WebCallResult<ICommonOrderId>> CancelOrderAsync(string orderId, string symbol = null)
         {
             var result = await CancelOrderAsync(long.Parse(orderId));
             if (result || (!result && result.Error.Message.Contains("Order not found")))
