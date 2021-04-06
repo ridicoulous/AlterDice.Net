@@ -119,18 +119,18 @@ namespace AlterDice.Net
         }
         public WebCallResult<AlterDiceOrder> GetOrder(long orderId) => GetOrderAsync(orderId).Result;
 
-        public async Task<WebCallResult<AlterDiceGetOrdersResult>> GetOrdersHistoryAsync(int page=1, int limit = 2000,CancellationToken ct = default)
+        public async Task<WebCallResult<AlterDiceGetOrdersResult>> GetOrdersHistoryAsync(int page = 1, int limit = 2000, CancellationToken ct = default)
         {
-            var request = await SendRequest<AlterDiceGetOrdersResponse>(GetUrl(OrdersHistoryUrl), HttpMethod.Post, ct, new AlterDicePagedAuthenticatedRequest(page,limit).AsDictionary(), true, false);
-            return new WebCallResult<AlterDiceGetOrdersResult>(request.ResponseStatusCode, request.ResponseHeaders, request? new AlterDiceGetOrdersResult(request.Data?.Response?.Pagination,request.Data?.Response?.Orders):null, request.Error);
+            var request = await SendRequest<AlterDiceGetOrdersResponse>(GetUrl(OrdersHistoryUrl), HttpMethod.Post, ct, new AlterDicePagedAuthenticatedRequest(page, limit).AsDictionary(), true, false);
+            return new WebCallResult<AlterDiceGetOrdersResult>(request.ResponseStatusCode, request.ResponseHeaders, request ? new AlterDiceGetOrdersResult(request.Data?.Response?.Pagination, request.Data?.Response?.Orders) : null, request.Error);
         }
 
-        public WebCallResult<AlterDiceGetOrdersResult> GetOrdersHistory(int page=1, int limit = 2000) => GetOrdersHistoryAsync(page,  limit).Result;
+        public WebCallResult<AlterDiceGetOrdersResult> GetOrdersHistory(int page = 1, int limit = 2000) => GetOrdersHistoryAsync(page, limit).Result;
 
         public async Task<WebCallResult<bool>> CancelOrderAsync(long orderId, CancellationToken ct = default)
         {
-            var request = await SendRequest<AlterDiceGetOrderResponse>(GetUrl(CancelOrderUrl), HttpMethod.Post, ct, new AlterDiceGetOrderRequest(orderId).AsDictionary(), true, false);           
-           
+            var request = await SendRequest<AlterDiceGetOrderResponse>(GetUrl(CancelOrderUrl), HttpMethod.Post, ct, new AlterDiceGetOrderRequest(orderId).AsDictionary(), true, false);
+
             return new WebCallResult<bool>(request.ResponseStatusCode, request.ResponseHeaders, request, request.Error);
         }
 
@@ -231,13 +231,13 @@ namespace AlterDice.Net
 
         async Task<WebCallResult<IEnumerable<ICommonOrder>>> IExchangeClient.GetClosedOrdersAsync(string symbol = null)
         {
-            var orders = await GetOrdersHistoryAsync();
+            var orders = await GetAllOrdersHistoryAsync();
 
             if (!orders)
             {
                 return WebCallResult<IEnumerable<ICommonOrder>>.CreateErrorResult(orders.Error);
             }
-            var result = orders.Data.Orders;
+            var result = orders.Data;
             if (!String.IsNullOrEmpty(symbol))
             {
                 result = result.Where(c => c.Symbol == symbol).ToList();
@@ -261,7 +261,7 @@ namespace AlterDice.Net
             return new WebCallResult<IEnumerable<ICommonBalance>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.Result, request.Error);
         }
 
-        public async Task<WebCallResult<List<AlterDiceOrder>>> GetAllOrdersHistoryAsync(CancellationToken ct = default)
+        public async Task<WebCallResult<List<AlterDiceOrder>>> GetAllOrdersHistoryAsync(int? limit = null, CancellationToken ct = default)
         {
             var result = new List<AlterDiceOrder>();
             int startPage = 1;
@@ -272,10 +272,13 @@ namespace AlterDice.Net
                 var orders = await GetOrdersHistoryAsync(startPage);
                 if (orders)
                 {
-                    
                     result.AddRange(orders.Data.Orders);
-                    startPage = orders.Data.Pagination.CurrentPage+1;
-                    endPage= orders.Data.Pagination.TotalPagesCount;
+                    if (limit.HasValue && limit.Value <= result.Count)
+                    {
+                        break;
+                    }
+                    startPage = orders.Data.Pagination.CurrentPage + 1;
+                    endPage = orders.Data.Pagination.TotalPagesCount;
                     if (!orders.Data.Orders.Any())
                     {
                         break;
@@ -287,9 +290,9 @@ namespace AlterDice.Net
                     break;
                 }
             }
-            return new WebCallResult<List<AlterDiceOrder>>(System.Net.HttpStatusCode.OK, null, result,  error);
+            return new WebCallResult<List<AlterDiceOrder>>(System.Net.HttpStatusCode.OK, null, result, error);
         }
 
-        public WebCallResult<List<AlterDiceOrder>> GetAllOrdersHistory() => GetAllOrdersHistoryAsync().Result;
+        public WebCallResult<List<AlterDiceOrder>> GetAllOrdersHistory(int? limit = null) => GetAllOrdersHistoryAsync(limit).Result;
     }
 }

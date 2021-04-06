@@ -24,8 +24,8 @@ namespace AlterDice.Net.Interfaces
         Task<WebCallResult<AlterDiceGetOrdersResult>> GetOrdersHistoryAsync(int page=1, int limit = 2000, CancellationToken ct = default);
         WebCallResult<AlterDiceGetOrdersResult> GetOrdersHistory(int page=1, int limit=2000);
 
-        WebCallResult<List<AlterDiceOrder>> GetAllOrdersHistory();
-        Task<WebCallResult<List<AlterDiceOrder>>> GetAllOrdersHistoryAsync(CancellationToken ct = default);
+        WebCallResult<List<AlterDiceOrder>> GetAllOrdersHistory(int? limit = null);
+        Task<WebCallResult<List<AlterDiceOrder>>> GetAllOrdersHistoryAsync(int? limit = null,CancellationToken ct = default);
 
         Task<WebCallResult<List<AlterDiceBalance>>> GetBalancesAsync(CancellationToken ct = default);
         WebCallResult<List<AlterDiceBalance>> GetBalances();
