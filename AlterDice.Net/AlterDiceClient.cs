@@ -119,13 +119,13 @@ namespace AlterDice.Net
         }
         public WebCallResult<AlterDiceOrder> GetOrder(long orderId) => GetOrderAsync(orderId).Result;
 
-        public async Task<WebCallResult<List<AlterDiceOrder>>> GetOrdersHistoryAsync(CancellationToken ct = default)
+        public async Task<WebCallResult<AlterDiceGetOrdersResult>> GetOrdersHistoryAsync(int page=1, int limit = 2000,CancellationToken ct = default)
         {
-            var request = await SendRequest<AlterDiceGetOrdersResponse>(GetUrl(OrdersHistoryUrl), HttpMethod.Post, ct, new AlterDiceAuthenticatedRequest().AsDictionary(), true, false);
-            return new WebCallResult<List<AlterDiceOrder>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.Orders, request.Error);
+            var request = await SendRequest<AlterDiceGetOrdersResponse>(GetUrl(OrdersHistoryUrl), HttpMethod.Post, ct, new AlterDicePagedAuthenticatedRequest(page,limit).AsDictionary(), true, false);
+            return new WebCallResult<AlterDiceGetOrdersResult>(request.ResponseStatusCode, request.ResponseHeaders, request? new AlterDiceGetOrdersResult(request.Data?.Response?.Pagination,request.Data?.Response?.Orders):null, request.Error);
         }
 
-        public WebCallResult<List<AlterDiceOrder>> GetOrdersHistory() => GetOrdersHistoryAsync().Result;
+        public WebCallResult<AlterDiceGetOrdersResult> GetOrdersHistory(int page=1, int limit = 2000) => GetOrdersHistoryAsync(page,  limit).Result;
 
         public async Task<WebCallResult<bool>> CancelOrderAsync(long orderId, CancellationToken ct = default)
         {
@@ -237,7 +237,7 @@ namespace AlterDice.Net
             {
                 return WebCallResult<IEnumerable<ICommonOrder>>.CreateErrorResult(orders.Error);
             }
-            var result = orders.Data;
+            var result = orders.Data.Orders;
             if (!String.IsNullOrEmpty(symbol))
             {
                 result = result.Where(c => c.Symbol == symbol).ToList();
@@ -261,5 +261,35 @@ namespace AlterDice.Net
             return new WebCallResult<IEnumerable<ICommonBalance>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.Result, request.Error);
         }
 
+        public async Task<WebCallResult<List<AlterDiceOrder>>> GetAllOrdersHistoryAsync(CancellationToken ct = default)
+        {
+            var result = new List<AlterDiceOrder>();
+            int startPage = 1;
+            int endPage = 10;
+            Error? error = null;
+            while (startPage <= endPage)
+            {
+                var orders = await GetOrdersHistoryAsync(startPage);
+                if (orders)
+                {
+                    
+                    result.AddRange(orders.Data.Orders);
+                    startPage = orders.Data.Pagination.CurrentPage+1;
+                    endPage= orders.Data.Pagination.TotalPagesCount;
+                    if (!orders.Data.Orders.Any())
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    error = orders.Error;
+                    break;
+                }
+            }
+            return new WebCallResult<List<AlterDiceOrder>>(System.Net.HttpStatusCode.OK, null, result,  error);
+        }
+
+        public WebCallResult<List<AlterDiceOrder>> GetAllOrdersHistory() => GetAllOrdersHistoryAsync().Result;
     }
 }
