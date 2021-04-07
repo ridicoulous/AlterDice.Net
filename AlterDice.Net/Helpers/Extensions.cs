@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -15,7 +16,7 @@ namespace AlterDice.Net.Helpers
             {
                 return value;
             }
-            return value / 1.000000000000000000000000000000000m;
+            return decimal.Round(value ?? 0, 7) / 1.000000000000000000000000000000000m;
         }
         public static Dictionary<string, object> AsDictionary(this object source,
           BindingFlags bindingAttr = BindingFlags.FlattenHierarchy |
@@ -48,8 +49,8 @@ namespace AlterDice.Net.Helpers
                         value = value.ToString().ToLowerInvariant();
                     }
                     if (value is decimal || value is decimal?)
-                    {
-                       value= (value as decimal?).Normalize();
+                    {                        
+                        value = ((value as decimal?).Normalize() ?? 0).ToString(CultureInfo.InvariantCulture);
                     }
                     if (value.GetType().IsEnum)
                     {

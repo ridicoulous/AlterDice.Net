@@ -7,6 +7,7 @@ using CryptoExchange.Net.ExchangeInterfaces;
 using CryptoExchange.Net.Objects;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -118,17 +119,19 @@ namespace AlterDice.Net
         }
         public WebCallResult<AlterDiceOrder> GetOrder(long orderId) => GetOrderAsync(orderId).Result;
 
-        public async Task<WebCallResult<List<AlterDiceOrder>>> GetOrdersHistoryAsync(CancellationToken ct = default)
+        public async Task<WebCallResult<AlterDiceGetOrdersResult>> GetOrdersHistoryAsync(int page = 1, int limit = 2000, CancellationToken ct = default)
         {
-            var request = await SendRequest<AlterDiceGetOrdersResponse>(GetUrl(OrdersHistoryUrl), HttpMethod.Post, ct, new AlterDiceAuthenticatedRequest().AsDictionary(), true, false);
-            return new WebCallResult<List<AlterDiceOrder>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.Orders, request.Error);
+            var request = await SendRequest<AlterDiceGetOrdersResponse>(GetUrl(OrdersHistoryUrl), HttpMethod.Post, ct, new AlterDicePagedAuthenticatedRequest(page, limit).AsDictionary(), true, false);
+
+            return new WebCallResult<AlterDiceGetOrdersResult>(request.ResponseStatusCode, request.ResponseHeaders, request ? new AlterDiceGetOrdersResult(request.Data?.Response?.Pagination, request.Data?.Response?.Orders) : null, request.Error);
         }
 
-        public WebCallResult<List<AlterDiceOrder>> GetOrdersHistory() => GetOrdersHistoryAsync().Result;
+        public WebCallResult<AlterDiceGetOrdersResult> GetOrdersHistory(int page = 1, int limit = 2000) => GetOrdersHistoryAsync(page, limit).Result;
 
         public async Task<WebCallResult<bool>> CancelOrderAsync(long orderId, CancellationToken ct = default)
         {
             var request = await SendRequest<AlterDiceGetOrderResponse>(GetUrl(CancelOrderUrl), HttpMethod.Post, ct, new AlterDiceGetOrderRequest(orderId).AsDictionary(), true, false);
+
             return new WebCallResult<bool>(request.ResponseStatusCode, request.ResponseHeaders, request, request.Error);
         }
 
@@ -144,7 +147,7 @@ namespace AlterDice.Net
 
         public string GetSymbolName(string baseAsset, string quoteAsset)
         {
-            throw new NotImplementedException();
+            return baseAsset + quoteAsset;
         }
 
         public Task<WebCallResult<IEnumerable<ICommonSymbol>>> GetSymbolsAsync()
@@ -173,12 +176,12 @@ namespace AlterDice.Net
             return WebCallResult<ICommonOrderBook>.CreateFrom(book);
         }
 
-        public Task<WebCallResult<IEnumerable<ICommonRecentTrade>>> GetRecentTradesAsync(string symbol)
+        public async Task<WebCallResult<IEnumerable<ICommonRecentTrade>>> GetRecentTradesAsync(string symbol)
         {
             throw new NotImplementedException();
         }
 
-        async Task<WebCallResult<ICommonOrderId>> IExchangeClient.PlaceOrderAsync(string symbol, IExchangeClient.OrderSide side, IExchangeClient.OrderType type, decimal quantity, decimal? price = null, string accountId = null)
+        public async Task<WebCallResult<ICommonOrderId>> PlaceOrderAsync(string symbol, IExchangeClient.OrderSide side, IExchangeClient.OrderType type, decimal quantity, decimal? price = null, string accountId = null)
         {
             var placeOrderRequest = new AlterDicePlaceOrderRequest()
             {
@@ -189,16 +192,16 @@ namespace AlterDice.Net
                 Symbol = symbol
             };
             var request = await PlaceOrderAsync(placeOrderRequest);
-            if(request)
-                return new WebCallResult<ICommonOrderId>(request.ResponseStatusCode, request.ResponseHeaders, new AlterDiceOrderResponse() { OrderId=request.Data}, request.Error);
+            if (request)
+                return new WebCallResult<ICommonOrderId>(request.ResponseStatusCode, request.ResponseHeaders, new AlterDiceOrderResponse() { OrderId = request.Data }, request.Error);
 
             return WebCallResult<ICommonOrderId>.CreateErrorResult(request.Error);
         }
 
-        async Task<WebCallResult<ICommonOrder>> IExchangeClient.GetOrderAsync(string orderId, string symbol = null)
+        public async Task<WebCallResult<ICommonOrder>> GetOrderAsync(string orderId, string symbol = null)
         {
             long id;
-            if (long.TryParse(orderId,out id))
+            if (long.TryParse(orderId, out id))
             {
                 var order = await GetOrderAsync(id);
                 return WebCallResult<ICommonOrder>.CreateFrom(order);
@@ -206,25 +209,47 @@ namespace AlterDice.Net
             return WebCallResult<ICommonOrder>.CreateErrorResult(new ServerError($"Can not parse orderId {orderId}"));
         }
 
-        public Task<WebCallResult<IEnumerable<ICommonTrade>>> GetTradesAsync(string orderId, string symbol = null)
+        public async Task<WebCallResult<IEnumerable<ICommonTrade>>> GetTradesAsync(string orderId, string symbol = null)
         {
             throw new NotImplementedException();
         }
 
-        public Task<WebCallResult<IEnumerable<ICommonOrder>>> GetOpenOrdersAsync(string symbol = null)
+        public async Task<WebCallResult<IEnumerable<ICommonOrder>>> GetOpenOrdersAsync(string symbol = null)
         {
-            throw new NotImplementedException();
+            var orders = await GetActiveOrdersAsync();
+
+            if (!orders)
+            {
+                return WebCallResult<IEnumerable<ICommonOrder>>.CreateErrorResult(orders.Error);
+            }
+            var result = orders.Data;
+            if (!String.IsNullOrEmpty(symbol))
+            {
+                result = result.Where(c => c.Symbol == symbol).ToList();
+            }
+            return new WebCallResult<IEnumerable<ICommonOrder>>(orders.ResponseStatusCode, orders.ResponseHeaders, result, null);
         }
 
-        public Task<WebCallResult<IEnumerable<ICommonOrder>>> GetClosedOrdersAsync(string symbol = null)
+        public async Task<WebCallResult<IEnumerable<ICommonOrder>>> GetClosedOrdersAsync(string symbol = null)
         {
-            throw new NotImplementedException();
+            var orders = await GetAllOrdersHistoryAsync();
+
+            if (!orders)
+            {
+                return WebCallResult<IEnumerable<ICommonOrder>>.CreateErrorResult(orders.Error);
+            }
+            var result = orders.Data;
+            if (!String.IsNullOrEmpty(symbol))
+            {
+                result = result.Where(c => c.Symbol == symbol).ToList();
+            }
+            return new WebCallResult<IEnumerable<ICommonOrder>>(orders.ResponseStatusCode, orders.ResponseHeaders, result, null);
         }
 
         public async Task<WebCallResult<ICommonOrderId>> CancelOrderAsync(string orderId, string symbol = null)
         {
             var result = await CancelOrderAsync(long.Parse(orderId));
-            if (result)
+            if (result || (!result && result.Error.Message.Contains("Order not found")))
             {
                 return new WebCallResult<ICommonOrderId>(result.ResponseStatusCode, result.ResponseHeaders, new AlterDiceOrderResponse(long.Parse(orderId)), null);
             }
@@ -237,5 +262,43 @@ namespace AlterDice.Net
             return new WebCallResult<IEnumerable<ICommonBalance>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.Result, request.Error);
         }
 
+        public async Task<WebCallResult<List<AlterDiceOrder>>> GetAllOrdersHistoryAsync(int? limit = null, CancellationToken ct = default)
+        {
+            var result = new List<AlterDiceOrder>();
+            int startPage = 1;
+            int endPage = 10;
+            Error? error = null;
+            while (startPage <= endPage)
+            {
+                var orders = await GetOrdersHistoryAsync(startPage);
+                if (orders)
+                {
+                    if (result.Select(i => i.Id).Intersect(orders.Data.Orders.Select(f => f.Id)).Any())
+                    {
+                        log.Write(CryptoExchange.Net.Logging.LogVerbosity.Error, "Obtained the same orders");
+                        break;
+                    }
+                    result.AddRange(orders.Data.Orders);
+                    if (limit.HasValue && limit.Value <= result.Count)
+                    {
+                        break;
+                    }
+                    startPage = orders.Data.Pagination.CurrentPage + 1;
+                    endPage = orders.Data.Pagination.TotalPagesCount;
+                    if (!orders.Data.Orders.Any())
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    error = orders.Error;
+                    break;
+                }
+            }
+            return new WebCallResult<List<AlterDiceOrder>>(System.Net.HttpStatusCode.OK, null, result, error);
+        }
+
+        public WebCallResult<List<AlterDiceOrder>> GetAllOrdersHistory(int? limit = null) => GetAllOrdersHistoryAsync(limit).Result;
     }
 }
