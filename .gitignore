@@ -338,3 +338,7 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+.vscode/launch.json
+.vscode/tasks.json
+AlterDice.ConsoleClient/.vscode/tasks.json
+AlterDice.ConsoleClient/.vscode/launch.json
