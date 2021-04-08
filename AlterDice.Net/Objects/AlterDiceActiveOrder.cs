@@ -1,8 +1,9 @@
+using CryptoExchange.Net.ExchangeInterfaces;
 using Newtonsoft.Json;
 
 namespace AlterDice.Net.Objects
 {
-    public class AlterDiceActiveOrder: AlterDiceOrder
+    public class AlterDiceActiveOrder : AlterDiceOrder,ICommonOrder
     {
         [JsonProperty("volume")]
         public new decimal Quantity { get; set; }
@@ -17,5 +18,14 @@ namespace AlterDice.Net.Objects
         [JsonProperty("rate")]
         public new decimal Price { get; set; }
 
+        public new string CommonId => Id.ToString();
+
+        public new string CommonSymbol => Symbol;
+
+        public new decimal CommonPrice => Price;
+
+        public new decimal CommonQuantity => Quantity;
+
+        public new string CommonStatus => Status.ToString();
     }
 }
