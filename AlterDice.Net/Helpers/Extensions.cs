@@ -16,7 +16,7 @@ namespace AlterDice.Net.Helpers
             {
                 return value;
             }
-            return decimal.Round(value ?? 0, 7) / 1.000000000000000000000000000000000m;
+            return decimal.Round(value ?? 0, 8) / 1.000000000000000000000000000000000m;
         }
         public static Dictionary<string, object> AsDictionary(this object source,
           BindingFlags bindingAttr = BindingFlags.FlattenHierarchy |

@@ -17,7 +17,7 @@ namespace AlterDice.ConsoleClient
         static async Task Main(string[] args)
         {
             var o = JsonConvert.DeserializeObject<AlterDiceOrder>("{\"id\":4242,\"type\":0,\"status\":2,\"type_trade\":0,\"currency_pair_id\":4242,\"volume\":424420000,\"user_id\":4242,\"volume_done\":464000000,\"rate\":428623,\"price\":504010," +
-                "\"time_create\":1616070033,\"time_done\":1616070331,\"price_done\":504010,\"stop_rate\":null,\"commission\":null,\"pair_name\":\"4242\",\"currency_main_iso3\":\"42\",\"currency_second_iso3\":\"42\"}");
+                "\"time_create\":1616070033,\"time_done\":1616070331,\"price_done\":0.0005,\"stop_rate\":null,\"commission\":null,\"pair_name\":\"4242\",\"currency_main_iso3\":\"42\",\"currency_second_iso3\":\"42\"}");
             var ad = new AlterDiceClient(new AlterDiceClientOptions("", "")
             {
                 LogWriters = new System.Collections.Generic.List<System.IO.TextWriter>() { new ThreadSafeFileWriter("log.txt"), new DebugTextWriter() },
