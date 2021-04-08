@@ -30,6 +30,17 @@ namespace AlterDice.Net.Interfaces
         Task<WebCallResult<List<AlterDiceBalance>>> GetBalancesAsync(CancellationToken ct = default);
         WebCallResult<List<AlterDiceBalance>> GetBalances();
 
+        /// <summary>
+        /// returns only 25 last trades fo the specified pair
+        /// </summary>
+        /// <returns></returns>
+        Task<WebCallResult<List<AlterDicePublicTrade>>> GetLastPublicTradesAsync(string pair, CancellationToken ct = default);
 
+        Task<WebCallResult<List<AlterDiceSymbol>>> GetSymbolsAsync(CancellationToken ct = default);
+        WebCallResult<List<AlterDiceSymbol>> GetSymbols();
+        Task<WebCallResult<AlterDiceTicker>> GetTickerAsync(string symbol, CancellationToken ct = default);
+        WebCallResult<AlterDiceTicker> GetTicker(string symbol);
+        Task<WebCallResult<IEnumerable<AlterDiceTicker>>> GetTickersAsync(CancellationToken ct = default);
+        WebCallResult<IEnumerable<AlterDiceTicker>> GetTickers();
     }
 }

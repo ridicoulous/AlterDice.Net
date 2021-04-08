@@ -19,6 +19,11 @@ namespace AlterDice.Net
         #region Endpoints
         private const string LoginUrl = "login";
         private const string OrderBookUrl = "public/book?pair={}";
+        private const string PublicTradesHistoryUrl = "public/trades?pair={}";
+        private const string TickerUrl = "public/ticker?pair={}";
+        private const string TickersUrl = "public/tickers";
+        private const string SymbolsUrl = "public/symbols";
+        
         private const string PlaceOrderUrl = "private/create-order";
         private const string GetActiveOrdersUrl = "private/orders";
         private const string GetOrderUrl = "private/get-order";
@@ -162,19 +167,19 @@ namespace AlterDice.Net
             return baseAsset + quoteAsset;
         }
 
-        public Task<WebCallResult<IEnumerable<ICommonSymbol>>> GetSymbolsAsync()
+        async Task<WebCallResult<IEnumerable<ICommonSymbol>>> IExchangeClient.GetSymbolsAsync()
         {
-            throw new NotImplementedException();
+            return WebCallResult<IEnumerable<ICommonSymbol>>.CreateFrom(await GetSymbolsAsync());
         }
 
-        public Task<WebCallResult<IEnumerable<ICommonTicker>>> GetTickersAsync()
+        async Task<WebCallResult<IEnumerable<ICommonTicker>>> IExchangeClient.GetTickersAsync()
         {
-            throw new NotImplementedException();
+            return WebCallResult<IEnumerable<ICommonTicker>>.CreateFrom(await GetTickersAsync());
         }
 
-        public Task<WebCallResult<ICommonTicker>> GetTickerAsync(string symbol)
+        async Task<WebCallResult<ICommonTicker>> IExchangeClient.GetTickerAsync(string symbol)
         {
-            throw new NotImplementedException();
+            return WebCallResult<ICommonTicker>.CreateFrom(await GetTickerAsync(symbol));
         }
 
         public Task<WebCallResult<IEnumerable<ICommonKline>>> GetKlinesAsync(string symbol, TimeSpan timespan, DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
@@ -188,9 +193,16 @@ namespace AlterDice.Net
             return WebCallResult<ICommonOrderBook>.CreateFrom(book);
         }
 
+        public async Task<WebCallResult<List<AlterDicePublicTrade>>> GetLastPublicTradesAsync(string symbol, CancellationToken ct = default)
+        {
+            var request = await SendRequest<AlterDicePublicTradeResponse>(GetUrl(FillPathParameter(PublicTradesHistoryUrl, symbol)), HttpMethod.Get, ct, null, false, false);
+            return new WebCallResult<List<AlterDicePublicTrade>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response, request.Error);
+        }
+
+        public WebCallResult<List<AlterDicePublicTrade>> GetLastPublicTrades(string symbol) => GetLastPublicTradesAsync(symbol).Result;
         public async Task<WebCallResult<IEnumerable<ICommonRecentTrade>>> GetRecentTradesAsync(string symbol)
         {
-            throw new NotImplementedException();
+            return WebCallResult<IEnumerable<ICommonRecentTrade>>.CreateFrom(await GetLastPublicTradesAsync(symbol));
         }
 
         public async Task<WebCallResult<ICommonOrderId>> PlaceOrderAsync(string symbol, IExchangeClient.OrderSide side, IExchangeClient.OrderType type, decimal quantity, decimal? price = null, string accountId = null)
@@ -221,7 +233,7 @@ namespace AlterDice.Net
             return WebCallResult<ICommonOrder>.CreateErrorResult(new ServerError($"Can not parse orderId {orderId}"));
         }
 
-        public async Task<WebCallResult<IEnumerable<ICommonTrade>>> GetTradesAsync(string orderId, string symbol = null)
+        public Task<WebCallResult<IEnumerable<ICommonTrade>>> GetTradesAsync(string orderId, string symbol = null)
         {
             throw new NotImplementedException();
         }
@@ -312,5 +324,27 @@ namespace AlterDice.Net
         }
 
         public WebCallResult<List<AlterDiceOrder>> GetAllOrdersHistory(int? limit = null) => GetAllOrdersHistoryAsync(limit).Result;
+
+        public async Task<WebCallResult<List<AlterDiceSymbol>>> GetSymbolsAsync(CancellationToken ct = default)
+        {
+            var request = await SendRequest<AlterDiceBaseResponse<List<AlterDiceSymbol>>>(GetUrl(SymbolsUrl), HttpMethod.Get, ct, null, false, false);
+            return new WebCallResult<List<AlterDiceSymbol>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response, request.Error);
+        }
+
+        public WebCallResult<List<AlterDiceSymbol>> GetSymbols() => GetSymbolsAsync().Result;
+        public async Task<WebCallResult<AlterDiceTicker>> GetTickerAsync(string symbol, CancellationToken ct = default)
+        {
+            var request = await SendRequest<AlterDiceBaseResponse<AlterDiceTicker>>(GetUrl(FillPathParameter(TickerUrl, symbol)), HttpMethod.Get, ct, null, false, false);
+            return new WebCallResult<AlterDiceTicker>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response, request.Error);
+        }
+
+        public WebCallResult<AlterDiceTicker> GetTicker(string symbol) => GetTickerAsync(symbol).Result;
+        public async Task<WebCallResult<IEnumerable<AlterDiceTicker>>> GetTickersAsync(CancellationToken ct = default)
+        {
+            var request = await SendRequest<AlterDiceBaseResponse<IEnumerable<AlterDiceTicker>>>(GetUrl(TickersUrl), HttpMethod.Get, ct, null, false, false);
+            return new WebCallResult<IEnumerable<AlterDiceTicker>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response, request.Error);
+        }
+
+        public WebCallResult<IEnumerable<AlterDiceTicker>> GetTickers() => GetTickersAsync().Result;
     }
 }
