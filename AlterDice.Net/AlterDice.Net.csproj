@@ -3,11 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.2.1</Version>
+    <Version>0.2.2</Version>
     <LangVersion>latest</LangVersion>
     <PackageProjectUrl>https://github.com/ridicoulous/AlterDice.Net</PackageProjectUrl>
     <Copyright>ridicoulous</Copyright>
-    <PackageReleaseNotes>04/06/2021 - added pagination at orders history, base library update
+    <PackageReleaseNotes>04/08/2021 - minor improvements
+04/06/2021 - added pagination at orders history, base library update
 03/18/2021 - IExchangeClient ipmlementation
 02/15/2021 - introduced SymbolOrderBook through api client. Need to implement socket.io rooms 
 02/14/2021 - initial beta</PackageReleaseNotes>
