@@ -111,19 +111,7 @@ namespace AlterDice.Net
         public WebCallResult<long> PlaceOrder(AlterDicePlaceOrderRequest placeOrderRequest) => PlaceOrderAsync(placeOrderRequest).Result;
         public async Task<WebCallResult<List<AlterDiceOrder>>> GetActiveOrdersAsync(CancellationToken ct = default)
         {
-            var request = await SendRequest<AlterDiceGetOrdersResponse>(GetUrl(GetActiveOrdersUrl), HttpMethod.Post, ct, new AlterDiceAuthenticatedRequest().AsDictionary(), true, false);
-#warning check api docs at <see cref="https://docs.alterdice.com/#api-Private_API-Number_Formatting">
-            if (request)
-            {
-                foreach(var o in request.Data.Response.Orders)
-                {
-                    o.Price *= 1e8m;
-                    o.Quantity *= 1e8m;
-                    o.QuantityDone *= 1e8m;
-                    o.QuoteQuantityFilled*= 1e8m;
-                    o.QuoteQuantity*= 1e8m;
-                }
-            }
+            var request = await SendRequest<AlterDiceGetOrdersResponse>(GetUrl(GetActiveOrdersUrl), HttpMethod.Post, ct, new AlterDiceAuthenticatedRequest().AsDictionary(), true, false);          
             return new WebCallResult<List<AlterDiceOrder>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.Orders, request.Error);
         }
 

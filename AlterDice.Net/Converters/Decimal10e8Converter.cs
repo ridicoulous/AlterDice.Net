@@ -20,11 +20,23 @@ namespace AlterDice.Net.Converters
             JToken token = JToken.Load(reader);
             if (token.Type == JTokenType.Float || token.Type == JTokenType.Integer)
             {
-                return token.ToObject<decimal>()/ 1e8m;
+                var parsed = token.ToObject<decimal>();
+                /// in active orders all numbers are not multiplicated to 100_000_000, so simply return parsed value
+                if (parsed / 1e8m <= 0.00000001m)
+                {
+                    return parsed;
+                }
+                return parsed / 1e8m;
             }
             if (token.Type == JTokenType.String)
             {
-                return Decimal.Parse(token.ToString(), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint | NumberStyles.Any, CultureInfo.InvariantCulture) / 1e8m;
+                var parsed= Decimal.Parse(token.ToString(), NumberStyles.AllowExponent | NumberStyles.AllowDecimalPoint | NumberStyles.Any, CultureInfo.InvariantCulture) ;
+                /// in active orders all numbers are not multiplicated to 100_000_000, so simply return parsed value
+                if (parsed / 1e8m <= 0.00000001m)
+                {
+                    return parsed;
+                }
+                return parsed / 1e8m;
             }
             if (token.Type == JTokenType.Null && objectType == typeof(decimal?))
             {
