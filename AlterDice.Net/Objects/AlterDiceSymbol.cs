@@ -19,6 +19,6 @@ namespace AlterDice.Net.Objects
 
         public string CommonName => Pair;
 
-        public decimal CommonMinimumTradeSize => throw new System.NotImplementedException();
+        public decimal CommonMinimumTradeSize => 0.00000001m;
     }
 }
