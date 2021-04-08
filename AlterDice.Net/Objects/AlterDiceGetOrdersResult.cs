@@ -7,6 +7,14 @@ namespace AlterDice.Net.Objects
 {
 
     public class AlterDiceGetOrdersResponse : AlterDiceBaseResponse<AlterDiceGetOrdersResult> { }
+    public class AlterDiceGetActiveOrdersResponse : AlterDiceBaseResponse<AlterDiceGetActiveOrdersResult> { }
+
+    public class AlterDiceGetActiveOrdersResult
+    {
+        [JsonProperty("list")]
+        public List<AlterDiceActiveOrder> Orders { get; set; }
+    }
+
     public  class AlterDiceGetOrdersResult
     {
         public AlterDiceGetOrdersResult()

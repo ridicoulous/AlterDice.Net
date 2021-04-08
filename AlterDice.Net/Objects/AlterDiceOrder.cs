@@ -26,18 +26,18 @@ namespace AlterDice.Net.Objects
         public string Symbol { get; set; }
 
         [JsonProperty("volume"),JsonConverter(typeof(Decimal10e8Converter))]
-        public decimal Quantity { get; set; }
+        public virtual decimal Quantity { get; set; }
 
         [JsonProperty("volume_done"), JsonConverter(typeof(Decimal10e8Converter))]
-        public decimal QuantityDone { get; set; }
+        public virtual decimal QuantityDone { get; set; }
 
         [JsonProperty("price"), JsonConverter(typeof(Decimal10e8Converter))]
-        public decimal QuoteQuantity { get; set; }
+        public virtual decimal QuoteQuantity { get; set; }
         [JsonProperty("price_done"), JsonConverter(typeof(Decimal10e8Converter))]
-        public decimal? QuoteQuantityFilled { get; set; }
+        public virtual decimal? QuoteQuantityFilled { get; set; }
 
         [JsonProperty("rate"), JsonConverter(typeof(Decimal10e8Converter))]
-        public decimal Price { get; set; }
+        public virtual decimal Price { get; set; }
 
         [JsonProperty("time_create"),JsonConverter(typeof(TimestampSecondsConverter))]
         public DateTime CreatedAt { get; set; }

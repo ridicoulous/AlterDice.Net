@@ -15,8 +15,8 @@ namespace AlterDice.Net.Interfaces
 
         Task<WebCallResult<long>> PlaceOrderAsync(AlterDicePlaceOrderRequest placeOrderRequest, CancellationToken ct=default);
         WebCallResult<long> PlaceOrder(AlterDicePlaceOrderRequest placeOrderRequest);
-        Task<WebCallResult<List<AlterDiceOrder>>> GetActiveOrdersAsync( CancellationToken ct = default);
-        WebCallResult<List<AlterDiceOrder>> GetActiveOrders();
+        Task<WebCallResult<List<AlterDiceActiveOrder>>> GetActiveOrdersAsync( CancellationToken ct = default);
+        WebCallResult<List<AlterDiceActiveOrder>> GetActiveOrders();
         Task<WebCallResult<AlterDiceOrder>> GetOrderAsync(long orderId, CancellationToken ct = default);
         WebCallResult<AlterDiceOrder> GetOrder(long orderId);
         Task<WebCallResult<bool>> CancelOrderAsync(long orderId, CancellationToken ct = default);
