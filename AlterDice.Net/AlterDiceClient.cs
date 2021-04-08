@@ -109,13 +109,13 @@ namespace AlterDice.Net
             return new WebCallResult<long>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.OrderId ?? 0, request.Error);
         }
         public WebCallResult<long> PlaceOrder(AlterDicePlaceOrderRequest placeOrderRequest) => PlaceOrderAsync(placeOrderRequest).Result;
-        public async Task<WebCallResult<List<AlterDiceOrder>>> GetActiveOrdersAsync(CancellationToken ct = default)
+        public async Task<WebCallResult<List<AlterDiceActiveOrder>>> GetActiveOrdersAsync(CancellationToken ct = default)
         {
-            var request = await SendRequest<AlterDiceGetOrdersResponse>(GetUrl(GetActiveOrdersUrl), HttpMethod.Post, ct, new AlterDiceAuthenticatedRequest().AsDictionary(), true, false);          
-            return new WebCallResult<List<AlterDiceOrder>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.Orders, request.Error);
+            var request = await SendRequest<AlterDiceGetActiveOrdersResponse>(GetUrl(GetActiveOrdersUrl), HttpMethod.Post, ct, new AlterDiceAuthenticatedRequest().AsDictionary(), true, false);          
+            return new WebCallResult<List<AlterDiceActiveOrder>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.Orders, request.Error);
         }
 
-        public WebCallResult<List<AlterDiceOrder>> GetActiveOrders() => GetActiveOrdersAsync().Result;
+        public WebCallResult<List<AlterDiceActiveOrder>> GetActiveOrders() => GetActiveOrdersAsync().Result;
 
         public async Task<WebCallResult<AlterDiceOrder>> GetOrderAsync(long orderId, CancellationToken ct = default)
         {
