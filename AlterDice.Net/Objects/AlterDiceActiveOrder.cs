@@ -1,31 +1,67 @@
+using CryptoExchange.Net.Converters;
 using CryptoExchange.Net.ExchangeInterfaces;
 using Newtonsoft.Json;
+using System;
 
 namespace AlterDice.Net.Objects
 {
-    public class AlterDiceActiveOrder : AlterDiceOrder,ICommonOrder
+    public class AlterDiceActiveOrder : ICommonOrder
     {
+        [JsonProperty("id")]
+        public long Id { get; set; }
+
+        [JsonProperty("type")]
+        public AlterDiceOrderSide OrderSide { get; set; }
+
+        [JsonProperty("status")]
+        public long Status { get; set; }
+
+        [JsonProperty("type_trade")]
+        public AlterDiceOrderType OrderType { get; set; }
+
+        [JsonProperty("pair_name")]
+        public string Symbol { get; set; }
+
         [JsonProperty("volume")]
-        public new decimal Quantity { get; set; }
+        public virtual decimal Quantity { get; set; }
+
         [JsonProperty("volume_done")]
-        public new decimal QuantityDone { get; set; }
+        public virtual decimal QuantityDone { get; set; }
 
         [JsonProperty("price")]
-        public new decimal QuoteQuantity { get; set; }
+        public virtual decimal QuoteQuantity { get; set; }
         [JsonProperty("price_done")]
-        public new decimal? QuoteQuantityFilled { get; set; }
+        public virtual decimal? QuoteQuantityFilled { get; set; }
 
         [JsonProperty("rate")]
-        public new decimal Price { get; set; }
+        public virtual decimal Price { get; set; }
 
-        public new string CommonId => Id.ToString();
+        [JsonProperty("time_create"), JsonConverter(typeof(TimestampSecondsConverter))]
+        public DateTime CreatedAt { get; set; }
 
-        public new string CommonSymbol => Symbol;
+        [JsonProperty("time_done"), JsonConverter(typeof(TimestampSecondsConverter))]
+        public DateTime? ExecutedAt { get; set; }
 
-        public new decimal CommonPrice => Price;
 
-        public new decimal CommonQuantity => Quantity;
+        public string CommonId => Id.ToString();
 
-        public new string CommonStatus => Status.ToString();
+        public string CommonSymbol => Symbol;
+
+        public decimal CommonPrice => Price;
+
+        public decimal CommonQuantity => Quantity;
+
+        public string CommonStatus => Status.ToString();
+
+        public bool IsActive => Status == 0;
+
+        public IExchangeClient.OrderSide CommonSide => OrderSide == AlterDiceOrderSide.Buy ? IExchangeClient.OrderSide.Buy : IExchangeClient.OrderSide.Sell;
+
+        public IExchangeClient.OrderType CommonType => OrderType switch
+        {
+            AlterDiceOrderType.Limit => IExchangeClient.OrderType.Limit,
+            AlterDiceOrderType.Market => IExchangeClient.OrderType.Market,
+            _ => IExchangeClient.OrderType.Other
+        };
     }
 }
