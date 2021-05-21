@@ -23,7 +23,7 @@ namespace AlterDice.Net
         private const string TickerUrl = "public/ticker?pair={}";
         private const string TickersUrl = "public/tickers";
         private const string SymbolsUrl = "public/symbols";
-        
+
         private const string PlaceOrderUrl = "private/create-order";
         private const string GetActiveOrdersUrl = "private/orders";
         private const string GetOrderUrl = "private/get-order";
@@ -111,7 +111,7 @@ namespace AlterDice.Net
         public WebCallResult<long> PlaceOrder(AlterDicePlaceOrderRequest placeOrderRequest) => PlaceOrderAsync(placeOrderRequest).Result;
         public async Task<WebCallResult<List<AlterDiceActiveOrder>>> GetActiveOrdersAsync(CancellationToken ct = default)
         {
-            var request = await SendRequest<AlterDiceGetActiveOrdersResponse>(GetUrl(GetActiveOrdersUrl), HttpMethod.Post, ct, new AlterDiceAuthenticatedRequest().AsDictionary(), true, false);          
+            var request = await SendRequest<AlterDiceGetActiveOrdersResponse>(GetUrl(GetActiveOrdersUrl), HttpMethod.Post, ct, new AlterDiceAuthenticatedRequest().AsDictionary(), true, false);
             return new WebCallResult<List<AlterDiceActiveOrder>>(request.ResponseStatusCode, request.ResponseHeaders, request.Data?.Response?.Orders, request.Error);
         }
 
@@ -280,17 +280,23 @@ namespace AlterDice.Net
             int startPage = 1;
             int endPage = 10;
             Error? error = null;
+            HashSet<long> ids = new HashSet<long>();
             while (startPage <= endPage)
             {
                 var orders = await GetOrdersHistoryAsync(startPage);
                 if (orders)
                 {
-                    if (result.Select(i => i.Id).Intersect(orders.Data.Orders.Select(f => f.Id)).Any())
+                    foreach(var o in orders.Data.Orders)
                     {
-                        log.Write(CryptoExchange.Net.Logging.LogVerbosity.Error, "Obtained the same orders");
-                        break;
+                        if (ids.Contains(o.Id))
+                        {
+                            log.Write(CryptoExchange.Net.Logging.LogVerbosity.Warning, $"Getted already obtained order at history: {o.Id}");
+                            continue;
+                        }
+                        result.Add(o);
+                        ids.Add(o.Id);
+
                     }
-                    result.AddRange(orders.Data.Orders);
                     if (limit.HasValue && limit.Value <= result.Count)
                     {
                         break;

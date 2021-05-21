@@ -64,13 +64,13 @@ namespace AlterDice.Net
                 _timer.Elapsed += T_Elapsed;
             }
 
-            _socket = new AlterDiceSocketClient("AlterDiceSocketBook", new SocketClientOptions("https://socket.alterdice.com") 
-            {  
-                LogVerbosity=CryptoExchange.Net.Logging.LogVerbosity.Debug,
+            _socket = new AlterDiceSocketClient("AlterDiceSocketBook", new SocketClientOptions("https://socket.alterdice.com")
+            {
+                LogVerbosity = CryptoExchange.Net.Logging.LogVerbosity.Debug,
                 LogWriters = new System.Collections.Generic.List<System.IO.TextWriter>() { new DebugTextWriter() },
-            }, 
+            },
             new AlterDiceAuthenticationProvider(new CryptoExchange.Net.Authentication.ApiCredentials("42", "42")));
-            _socket.OnOrderBookUpdate += _socket_OnOrderBookUpdate1;
+            //_socket.OnOrderBookUpdate += _socket_OnOrderBookUpdate1;
         }
 
         private void _socket_OnOrderBookUpdate1(AlterDiceSocketOrderBookUpdateEvent data)

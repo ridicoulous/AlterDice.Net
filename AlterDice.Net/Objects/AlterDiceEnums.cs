@@ -16,4 +16,10 @@ namespace AlterDice.Net.Objects
         Buy=0,
         Sell=1
     }
+    public enum AlterDiceOrderStatus
+    {
+        Acvtive = 0,
+        Filled = 2,
+        Canceled=3
+    }
 }
