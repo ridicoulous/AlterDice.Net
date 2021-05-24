@@ -55,7 +55,7 @@ namespace AlterDice.Net.Objects
 
         public string CommonStatus => Status.ToString();
 
-        public bool IsActive => Status == 0;
+        public bool IsActive => Status == 1;
 
         public IExchangeClient.OrderSide CommonSide => OrderSide == AlterDiceOrderSide.Buy ? IExchangeClient.OrderSide.Buy : IExchangeClient.OrderSide.Sell;
 
