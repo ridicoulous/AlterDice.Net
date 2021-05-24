@@ -49,7 +49,7 @@ namespace AlterDice.Net
            // result.Add("X-Auth-Token", Credentials.Key.GetString());
             var dataToSign = CreateAuthPayload(parameters);
             var signedData = Sign(dataToSign);            
-            result.Add("X-Auth-Sign", signedData);
+            result.Add("x-auth-sign", signedData);
             return result;
         }
         public override Dictionary<string, object> AddAuthenticationToParameters(string uri, HttpMethod method, Dictionary<string, object> parameters, bool signed, PostParameters postParameterPosition, ArrayParametersSerialization arraySerialization)

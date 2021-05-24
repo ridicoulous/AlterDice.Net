@@ -17,16 +17,15 @@ namespace AlterDice.ConsoleClient
 
         static async Task Main(string[] args)
         {
-            ICommonOrder o = JsonConvert.DeserializeObject<AlterDiceActiveOrder>("{\"id\":4242,\"type\":0,\"status\":2,\"type_trade\":0,\"currency_pair_id\":4242,\"volume\":424420000,\"user_id\":4242,\"volume_done\":464000000,\"rate\":428623,\"price\":504010," +
-                "\"time_create\":1616070033,\"time_done\":1616070331,\"price_done\":0.0005,\"stop_rate\":null,\"commission\":null,\"pair_name\":\"4242\",\"currency_main_iso3\":\"42\",\"currency_second_iso3\":\"42\"}");
-            var ad = new AlterDiceClient(new AlterDiceClientOptions("", "")
+            var id = "4081280381";
+            IExchangeClient ad = new AlterDiceClient(new AlterDiceClientOptions("msg_kurt@outlook.com", "ZZzz1234")
             {
                 LogWriters = new System.Collections.Generic.List<System.IO.TextWriter>() { new ThreadSafeFileWriter("log.txt"), new DebugTextWriter() },
                 LogVerbosity = LogVerbosity.Debug
             });
-            var ord = await ad.GetAllOrdersHistoryAsync();
-
-            var ob = new AlterDiceSymbolOrderBook("BTCUSDT", ad, new AlterDiceOrderBookOptions("42", 3051)
+            var ord = await ad.GetTradesAsync(id);
+            var hist = await ad.GetClosedOrdersAsync();
+            var ob = new AlterDiceSymbolOrderBook("BTCUSDT",  new AlterDiceOrderBookOptions("42", 3051)
             {
                 LogWriters = new System.Collections.Generic.List<System.IO.TextWriter>() { new ThreadSafeFileWriter("orderbook.txt"), new DebugTextWriter() },
                 LogVerbosity = LogVerbosity.Debug

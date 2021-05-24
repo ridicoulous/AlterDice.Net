@@ -45,8 +45,6 @@ namespace AlterDice.Net.Objects
         [JsonProperty("time_done"), JsonConverter(typeof(TimestampSecondsConverter))]
         public DateTime? ExecutedAt { get; set; }
 
-
-
         public string CommonId => Id.ToString();
 
         public string CommonSymbol => Symbol;

@@ -17,23 +17,26 @@ namespace AlterDice.Net
     public class AlterDiceClient : RestClient, IAlterDiceClient, IExchangeClient
     {
         #region Endpoints
-        private const string LoginUrl = "login";
-        private const string OrderBookUrl = "public/book?pair={}";
-        private const string PublicTradesHistoryUrl = "public/trades?pair={}";
-        private const string TickerUrl = "public/ticker?pair={}";
-        private const string TickersUrl = "public/tickers";
-        private const string SymbolsUrl = "public/symbols";
 
-        private const string PlaceOrderUrl = "private/create-order";
-        private const string GetActiveOrdersUrl = "private/orders";
-        private const string GetOrderUrl = "private/get-order";
-        private const string CancelOrderUrl = "private/delete-order";
-        private const string OrdersHistoryUrl = "private/history";
-        private const string BalancesUrl = "private/balances";
+        private const string LoginUrl = "v1/login";
+        private const string OrderBookUrl = "v1/public/book?pair={}";
+        private const string PublicTradesHistoryUrl = "v1/public/trades?pair={}";
+        private const string TickerUrl = "v1/public/ticker?pair={}";
+        private const string TickersUrl = "v1/public/tickers";
+        private const string SymbolsUrl = "v1/public/symbols";
+
+        private const string PlaceOrderUrl = "v1/private/create-order";
+        private const string GetActiveOrdersUrl = "v1/private/orders";
+        private const string GetOrderUrl = "v1/private/get-order";
+        private const string CancelOrderUrl = "v1/private/delete-order";
+        private const string OrdersHistoryUrl = "v1/private/history";
+        private const string BalancesUrl = "v1/private/balances";
+        private const string OrderTrades = "api/p2p/view-order";
+
 
         #endregion
         private readonly string LoginEmail, Password;
-
+        public int OrderResultsLimit { get; set; }
         private static AlterDiceClientOptions defaultOptions = new AlterDiceClientOptions();
 
         public AlterDiceClient() : this("AlterDiceClient", defaultOptions, null)
@@ -221,9 +224,10 @@ namespace AlterDice.Net
             return WebCallResult<ICommonOrder>.CreateErrorResult(new ServerError($"Can not parse orderId {orderId}"));
         }
 
-        public Task<WebCallResult<IEnumerable<ICommonTrade>>> GetTradesAsync(string orderId, string symbol = null)
+        public async Task<WebCallResult<IEnumerable<ICommonTrade>>> GetTradesAsync(string orderId, string symbol = null)
         {
-            throw new NotImplementedException();
+            var orderTrades = await SendRequest<AlterDiceOrderTradesResponse>(GetUrl(OrderTrades), HttpMethod.Post, default, new Dictionary<string, object>() { { "id", long.Parse(orderId) } }, true, false);
+            return new WebCallResult<IEnumerable<ICommonTrade>>(orderTrades.ResponseStatusCode, orderTrades.ResponseHeaders, orderTrades?.Data?.Response?.Trades, orderTrades.Error);
         }
 
         public async Task<WebCallResult<IEnumerable<ICommonOrder>>> GetOpenOrdersAsync(string symbol = null)
@@ -286,7 +290,7 @@ namespace AlterDice.Net
                 var orders = await GetOrdersHistoryAsync(startPage);
                 if (orders)
                 {
-                    foreach(var o in orders.Data.Orders)
+                    foreach (var o in orders.Data.Orders)
                     {
                         if (ids.Contains(o.Id))
                         {
@@ -297,7 +301,7 @@ namespace AlterDice.Net
                         ids.Add(o.Id);
 
                     }
-                    if (limit.HasValue && limit.Value <= result.Count)
+                    if (limit.HasValue && limit.Value <= result.Count || (OrderResultsLimit>0 && OrderResultsLimit<result.Count))
                     {
                         break;
                     }
