@@ -31,7 +31,7 @@ namespace AlterDice.Net
         private const string CancelOrderUrl = "v1/private/delete-order";
         private const string OrdersHistoryUrl = "v1/private/history";
         private const string BalancesUrl = "v1/private/balances";
-        private const string OrderTrades = "api/p2p/view-order";
+        
 
 
         #endregion
@@ -226,7 +226,7 @@ namespace AlterDice.Net
 
         public async Task<WebCallResult<IEnumerable<ICommonTrade>>> GetTradesAsync(string orderId, string symbol = null)
         {
-            var orderTrades = await SendRequest<AlterDiceOrderTradesResponse>(GetUrl(OrderTrades), HttpMethod.Post, default, new Dictionary<string, object>() { { "id", long.Parse(orderId) } }, true, false);
+            var orderTrades = await SendRequest<AlterDiceOrderTradesResponse>(GetUrl(GetOrderUrl), HttpMethod.Post, default, new Dictionary<string, object>() { { "order_id", long.Parse(orderId) } }, true, false);
             return new WebCallResult<IEnumerable<ICommonTrade>>(orderTrades.ResponseStatusCode, orderTrades.ResponseHeaders, orderTrades?.Data?.Response?.Trades, orderTrades.Error);
         }
 

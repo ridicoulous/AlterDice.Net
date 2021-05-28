@@ -13,13 +13,17 @@ namespace AlterDice.Net.Objects
     }
     public enum AlterDiceOrderSide
     {
-        Buy=0,
-        Sell=1
+        Buy = 0,
+        Sell = 1
     }
+    /// <summary>
+    ///  Order status(0 - in process/1 - added to book/2 -done /3 - canceled).
+    /// </summary>
     public enum AlterDiceOrderStatus
     {
-        Acvtive = 0,
+        InProcess = 0,
+        Active = 1,
         Filled = 2,
-        Canceled=3
+        Canceled = 3
     }
 }

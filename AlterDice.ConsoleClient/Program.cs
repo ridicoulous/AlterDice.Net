@@ -17,25 +17,15 @@ namespace AlterDice.ConsoleClient
 
         static async Task Main(string[] args)
         {
-            var id = "4081280381";
+            var id = "42";
             IExchangeClient ad = new AlterDiceClient(new AlterDiceClientOptions("", "")
             {
                 LogWriters = new System.Collections.Generic.List<System.IO.TextWriter>() { new ThreadSafeFileWriter("log.txt"), new DebugTextWriter() },
                 LogVerbosity = LogVerbosity.Debug
             });
-            var ord = await ad.GetTradesAsync(id);
+           // var ord = await ad.GetTradesAsync(id);
             var hist = await ad.GetClosedOrdersAsync();
-            var ob = new AlterDiceSymbolOrderBook("BTCUSDT",  new AlterDiceOrderBookOptions("42", 3051)
-            {
-                LogWriters = new System.Collections.Generic.List<System.IO.TextWriter>() { new ThreadSafeFileWriter("orderbook.txt"), new DebugTextWriter() },
-                LogVerbosity = LogVerbosity.Debug
-
-            });
-            ob.OnOrderBookUpdate += Ob_OnOrderBookUpdate;
-            ob.Start();
-            Console.Read();
-           // var hist = await ad.GetOrdersHistoryAsync();
-
+         
            
             Console.ReadLine();
         }
