@@ -17,18 +17,25 @@ namespace AlterDice.ConsoleClient
 
         static async Task Main(string[] args)
         {
-            var id = "42";
-            IExchangeClient ad = new AlterDiceClient(new AlterDiceClientOptions("", "")
-            {
-                LogWriters = new System.Collections.Generic.List<System.IO.TextWriter>() { new ThreadSafeFileWriter("log.txt"), new DebugTextWriter() },
-                LogVerbosity = LogVerbosity.Debug
-            });
-           // var ord = await ad.GetTradesAsync(id);
-            var hist = await ad.GetClosedOrdersAsync();
-         
-           
+            var book = new AlterDiceSymbolOrderBook("BTCUSDT", new AlterDiceOrderBookOptions("BTCUSDT", 3051));
+
+            //    book.OnOrderBookUpdate += Book_OnOrderBookUpdate;
+            book.OnBestOffersChanged += Book_OnBestOffersChanged;
+            await book.StartAsync();
             Console.ReadLine();
+            book.Dispose();
         }
+
+        private static void Book_OnBestOffersChanged((ISymbolOrderBookEntry BestBid, ISymbolOrderBookEntry BestAsk) obj)
+        {
+            Console.WriteLine($"{obj.BestBid.Price}:{obj.BestAsk.Price} - [{obj.BestBid.Quantity}:{obj.BestAsk.Quantity}]");
+        }
+
+        private static void Book_OnOrderBookUpdate((IEnumerable<ISymbolOrderBookEntry> Bids, IEnumerable<ISymbolOrderBookEntry> Asks) obj)
+        {
+            //Console.WriteLine(JsonConvert.SerializeObject(obj));
+        }
+
         private static List<ISymbolOrderBookEntry> _lastAsks = new List<ISymbolOrderBookEntry>();
         private static List<ISymbolOrderBookEntry> _lastBids = new List<ISymbolOrderBookEntry>();
 

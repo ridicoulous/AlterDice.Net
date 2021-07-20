@@ -57,12 +57,10 @@ namespace AlterDice.Net
         {
             _symbolId = options.SymbolId;
             _apiClient = new AlterDiceClient();
-            if (options.SymbolId == 0 && options.Timeout.HasValue)
-            {
-                _shouldUseApi = true;
-                _timer = new System.Timers.Timer(options.Timeout.Value);
-                _timer.Elapsed += T_Elapsed;
-            }
+            _shouldUseApi = options.SymbolId == 0;
+
+            _timer = new System.Timers.Timer(options.Timeout ?? 10000);
+            _timer.Elapsed += T_Elapsed;
 
             _socket = new AlterDiceSocketClient("AlterDiceSocketBook", new SocketClientOptions("https://socket.alterdice.com")
             {
@@ -70,20 +68,31 @@ namespace AlterDice.Net
                 LogWriters = new System.Collections.Generic.List<System.IO.TextWriter>() { new DebugTextWriter() },
             },
             new AlterDiceAuthenticationProvider(new CryptoExchange.Net.Authentication.ApiCredentials("42", "42")));
-            //_socket.OnOrderBookUpdate += _socket_OnOrderBookUpdate1;
+
         }
 
         private void _socket_OnOrderBookUpdate1(AlterDiceSocketOrderBookUpdateEvent data)
         {
+            if (this.BidCount==0||this.AskCount==0)
+            {
+                GetAndSetBook().GetAwaiter().GetResult();
+            }
             var bids = data.Data.Bids.Values.Select(c => new AlterDiceOrderBookEntry() { Count = (int)c.Count, Price = c.Rate / 1e8m, Quantity = c.Volume / 1e8m }).ToList();
             var asks = data.Data.Asks.Values.Select(c => new AlterDiceOrderBookEntry() { Count = (int)c.Count, Price = c.Rate / 1e8m, Quantity = c.Volume / 1e8m }).ToList();
-
-            UpdateOrderBook(LastId,NextId(), bids, asks);
+            UpdateOrderBook(DateTime.UtcNow.Ticks, bids, asks);
         }
 
         private void T_Elapsed(object sender, ElapsedEventArgs e)
         {
-            Task.Run(async () => await GetAndSetBook());
+            if (_shouldUseApi)
+            {
+                Task.Run(async () => await GetAndSetBook());
+            }
+            else
+            {
+                Task.Run(async () => await GetAndSetBook());
+                Task.Run(async () => await _socket.Send("ping"));
+            }
         }
 
         private async Task<CallResult<bool>> GetAndSetBook()
@@ -108,12 +117,13 @@ namespace AlterDice.Net
 
         public override void Dispose()
         {
-
+            asks.Clear();
+            bids.Clear();
+            _socket.Dispose();
         }
 
         protected override async Task<CallResult<bool>> DoResync()
         {
-
             return await GetAndSetBook();
         }
 
@@ -122,18 +132,17 @@ namespace AlterDice.Net
             //_socket.OnOrderBookUpdate += _socket_OnOrderBookUpdate;
             WebsocketFactory wf = new WebsocketFactory();
             await GetAndSetBook();
-            if (_shouldUseApi)
+            _timer.Start();
+
+            if (!_shouldUseApi)
             {
-                _timer.Start();
-            }
-            else
-            {
+                _socket.OnOrderBookUpdate += _socket_OnOrderBookUpdate1;
                 await _socket.SubscribeToBook(_symbolId);
             }
             return new CallResult<UpdateSubscription>(new UpdateSubscription(new FakeConnection(_socket, wf.CreateWebsocket(log, "wss://echo.websocket.org")), null), null);
         }
 
-        
+
 
         public class FakeConnection : SocketConnection
         {
