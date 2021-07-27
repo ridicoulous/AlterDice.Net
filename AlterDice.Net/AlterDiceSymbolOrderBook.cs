@@ -84,15 +84,13 @@ namespace AlterDice.Net
 
         private void T_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if (_shouldUseApi)
+            Task.Run(async () => await GetAndSetBook());
+
+            if (!_shouldUseApi)
             {
-                Task.Run(async () => await GetAndSetBook());
-            }
-            else
-            {
-                Task.Run(async () => await GetAndSetBook());
                 Task.Run(async () => await _socket.Send("ping"));
             }
+            
         }
 
         private async Task<CallResult<bool>> GetAndSetBook()

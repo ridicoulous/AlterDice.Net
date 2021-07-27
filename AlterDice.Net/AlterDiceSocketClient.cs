@@ -6,10 +6,13 @@ using CryptoExchange.Net.Objects;
 using CryptoExchange.Net.Sockets;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+//using Newtonsoft.Json;
+//using Newtonsoft.Json.Linq;
 using SocketIOClient;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 
@@ -21,64 +24,58 @@ namespace AlterDice.Net
 
         public AlterDiceSocketClient(string clientName, SocketClientOptions exchangeOptions, AuthenticationProvider authenticationProvider) : base(clientName, exchangeOptions, authenticationProvider)
         {
-
-            //_socketIo = IO.Socket("https://socket.alterdice.com");
-            //_socketIo.Connect();
-            _socketIo = new SocketIO("https://socket.alterdice.com/",new SocketIOOptions() { EIO=3,ConnectionTimeout=TimeSpan.FromSeconds(20),Reconnection=true,});
+            _socketIo = new SocketIO("https://socket.alterdice.com/", new SocketIOOptions() { EIO = 3, ConnectionTimeout = TimeSpan.FromSeconds(20), Reconnection = true });
             _socketIo.OnPong += _socketIo_OnPong;
             _socketIo.OnConnected += _socketIo_OnConnected;
             _socketIo.OnError += _socketIo_OnError;
-            
-            _socketIo.OnReceivedEvent += _socketIo_OnReceivedEvent;
-     
+
             _socketIo.OnDisconnected += _socketIo_OnDisconnected;
 
-          
             _socketIo.OnConnected += async (sender, e) =>
             {
-                //await _socketIo.EmitAsync("hi", ".net core");
-                Console.WriteLine($"{DateTime.UtcNow}: connected");
+                log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"{DateTime.UtcNow}: connected");
             };
             _socketIo.On("message", (data) =>
-            {               
-                var t = JsonConvert.DeserializeObject<List<AlterDiceSocketOrderBookUpdateEvent>>(data.GetValue(0).ToString());
-                OnOrderBookUpdate?.Invoke(t[0]);
+            {
+                OnOrderBookMessage(data);
             });
             _socketIo.ConnectAsync().GetAwaiter().GetResult();
-            
         }
-
+        private void OnOrderBookMessage(SocketIOResponse eventData)
+        {
+            try
+            {                
+                var data = JsonConvert.DeserializeObject<List<AlterDiceSocketOrderBookUpdateEvent>>(eventData.GetValue(0).ToString());
+                foreach (var update in data)
+                    OnOrderBookUpdate?.Invoke(update);
+            }
+            catch (Exception ex)
+            {
+                log.Write(CryptoExchange.Net.Logging.LogVerbosity.Error, $"can not process event {eventData.ToString()}: {ex.Message}");
+            }
+        }
         private void _socketIo_OnPong(object sender, TimeSpan e)
         {
-            Console.WriteLine($"{DateTime.UtcNow}: pong recieved");
+            log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"{DateTime.UtcNow}: pong recieved");
 
         }
         public async Task Send(string data)
         {
-           // Console.WriteLine($"{DateTime.UtcNow}: Sending {data}");
             await _socketIo.EmitAsync(data);
         }
         private void _socketIo_OnDisconnected(object sender, string e)
         {
-            Console.WriteLine($"{DateTime.UtcNow} : disconnected");
-            log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"Socket.io client disconnected: {e}");
-            //_socketIo.ConnectAsync().GetAwaiter().GetResult();
-        }
 
-        private void _socketIo_OnReceivedEvent(object sender, SocketIOClient.EventArguments.ReceivedEventArgs e)
-        {
-            log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"Socket.io Received {e.Event}: {e.Response}");
+            log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"Socket.io client disconnected: {e}");
         }
 
         private void _socketIo_OnError(object sender, string e)
         {
-            Console.WriteLine($"{DateTime.UtcNow}: err {e}");
-
             log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"Socket.io client error: {e}");
         }
 
         public event Action<AlterDiceSocketOrderBookUpdateEvent> OnOrderBookUpdate;
-      
+
         public async Task SubscribeToBook(int symbolId)
         {
             log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"Subscribing to bookId {symbolId}");
