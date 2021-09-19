@@ -31,7 +31,7 @@ namespace AlterDice.Net
         private const string CancelOrderUrl = "v1/private/delete-order";
         private const string OrdersHistoryUrl = "v1/private/history";
         private const string BalancesUrl = "v1/private/balances";
-        private const string OrderTrades = "api/p2p/view-order";
+
 
 
         #endregion
@@ -193,7 +193,20 @@ namespace AlterDice.Net
         public WebCallResult<List<AlterDicePublicTrade>> GetLastPublicTrades(string symbol) => GetLastPublicTradesAsync(symbol).Result;
         public async Task<WebCallResult<IEnumerable<ICommonRecentTrade>>> GetRecentTradesAsync(string symbol)
         {
-            return WebCallResult<IEnumerable<ICommonRecentTrade>>.CreateFrom(await GetLastPublicTradesAsync(symbol));
+            var orders = await GetAllOrdersHistoryAsync(4000);
+            if (!orders)
+                return new WebCallResult<IEnumerable<ICommonRecentTrade>>(orders.ResponseStatusCode, orders.ResponseHeaders, null, orders.Error);
+            var tradedOrders = orders.Data
+                .Where(o => o.Status == AlterDiceOrderStatus.Filled || o.QuantityDone > 0)
+                .Select(c => new AlterDicePublicTrade()
+                {
+                    Price = c.Price,
+                    QuoteQuantity = c.QuoteQuantityFilled ?? -1,
+                    Timestamp = c.ExecutedAt ?? DateTime.UtcNow,
+                    Type = c.OrderSide,
+                    Volume = c.QuantityDone
+                });
+            return new WebCallResult<IEnumerable<ICommonRecentTrade>>(orders.ResponseStatusCode, orders.ResponseHeaders, tradedOrders, null);
         }
 
         public async Task<WebCallResult<ICommonOrderId>> PlaceOrderAsync(string symbol, IExchangeClient.OrderSide side, IExchangeClient.OrderType type, decimal quantity, decimal? price = null, string accountId = null)
@@ -226,7 +239,7 @@ namespace AlterDice.Net
 
         public async Task<WebCallResult<IEnumerable<ICommonTrade>>> GetTradesAsync(string orderId, string symbol = null)
         {
-            var orderTrades = await SendRequest<AlterDiceOrderTradesResponse>(GetUrl(OrderTrades), HttpMethod.Post, default, new Dictionary<string, object>() { { "id", long.Parse(orderId) } }, true, false);
+            var orderTrades = await SendRequest<AlterDiceOrderTradesResponse>(GetUrl(GetOrderUrl), HttpMethod.Post, default, new Dictionary<string, object>() { { "order_id", long.Parse(orderId) } }, true, false);
             return new WebCallResult<IEnumerable<ICommonTrade>>(orderTrades.ResponseStatusCode, orderTrades.ResponseHeaders, orderTrades?.Data?.Response?.Trades, orderTrades.Error);
         }
 
@@ -301,7 +314,7 @@ namespace AlterDice.Net
                         ids.Add(o.Id);
 
                     }
-                    if (limit.HasValue && limit.Value <= result.Count || (OrderResultsLimit>0 && OrderResultsLimit<result.Count))
+                    if (limit.HasValue && limit.Value <= result.Count || (OrderResultsLimit > 0 && OrderResultsLimit < result.Count))
                     {
                         break;
                     }

@@ -2,6 +2,7 @@ using CryptoExchange.Net.Converters;
 using CryptoExchange.Net.ExchangeInterfaces;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 
 namespace AlterDice.Net.Objects
 {
@@ -14,12 +15,12 @@ namespace AlterDice.Net.Objects
         public AlterDiceOrderSide OrderSide { get; set; }
 
         [JsonProperty("status")]
-        public long Status { get; set; }
+        public AlterDiceOrderStatus Status { get; set; }
 
         [JsonProperty("type_trade")]
         public AlterDiceOrderType OrderType { get; set; }
 
-        [JsonProperty("pair_name")]
+        [JsonProperty("pair")]
         public string Symbol { get; set; }
 
         [JsonProperty("volume")]
@@ -63,5 +64,8 @@ namespace AlterDice.Net.Objects
             AlterDiceOrderType.Market => IExchangeClient.OrderType.Market,
             _ => IExchangeClient.OrderType.Other
         };
+
+        [JsonProperty("list_trades")]
+        public List<AlterDiceOrderTrade> Trades { get; set; }
     }
 }

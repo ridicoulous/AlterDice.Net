@@ -1,4 +1,5 @@
 ﻿using AlterDice.Net.Converters;
+using CryptoExchange.Net.Converters;
 using CryptoExchange.Net.ExchangeInterfaces;
 using Newtonsoft.Json;
 using System;
@@ -7,40 +8,31 @@ using System.Text;
 
 namespace AlterDice.Net.Objects
 {
-    public class AlterDiceOrderTradesResponse : AlterDiceBaseResponse<AlterDiceOrderTradeResponseWrapper> 
+    public class AlterDiceOrderTradesResponse : AlterDiceBaseResponse<AlterDiceActiveOrder> 
     {
     
     
     }
 
-    public class AlterDiceOrderTradeResponseWrapper 
-    {
-        [JsonProperty("order")]
-        public AlterDiceOrder Order { get; set; }
-
-        [JsonProperty("list")]
-        public List<AlterDiceOrderTrade> Trades { get; set; }
-
-    }
-
+   
     public class AlterDiceOrderTrade : ICommonTrade
     {
         [JsonProperty("id")]
         public long Id { get; set; }
 
-        [JsonProperty("volume"),JsonConverter(typeof(Decimal10e8Converter))]
+        [JsonProperty("volume")]
         public decimal QuantityFilled { get; set; }
 
-        [JsonProperty("price"), JsonConverter(typeof(Decimal10e8Converter))]
+        [JsonProperty("price")]
         public decimal QuoteQuantityFilled { get; set; }
 
-        [JsonProperty("time_create")]
+        [JsonProperty("time_create"), JsonConverter(typeof(TimestampSecondsConverter))]
         public DateTime TimeCreate { get; set; }
 
-        [JsonProperty("rate"), JsonConverter(typeof(Decimal10e8Converter))]
+        [JsonProperty("rate")]
         public decimal Price { get; set; }
 
-        [JsonProperty("commission"), JsonConverter(typeof(Decimal10e8Converter))]
+        [JsonProperty("commission")]
         public decimal Commission { get; set; }
         public string CommonId => Id.ToString();
 
