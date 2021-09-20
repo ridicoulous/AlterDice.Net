@@ -193,20 +193,8 @@ namespace AlterDice.Net
         public WebCallResult<List<AlterDicePublicTrade>> GetLastPublicTrades(string symbol) => GetLastPublicTradesAsync(symbol).Result;
         public async Task<WebCallResult<IEnumerable<ICommonRecentTrade>>> GetRecentTradesAsync(string symbol)
         {
-            var orders = await GetAllOrdersHistoryAsync(4000);
-            if (!orders)
-                return new WebCallResult<IEnumerable<ICommonRecentTrade>>(orders.ResponseStatusCode, orders.ResponseHeaders, null, orders.Error);
-            var tradedOrders = orders.Data
-                .Where(o => o.Status == AlterDiceOrderStatus.Filled || o.QuantityDone > 0)
-                .Select(c => new AlterDicePublicTrade()
-                {
-                    Price = c.Price,
-                    QuoteQuantity = c.QuoteQuantityFilled ?? -1,
-                    Timestamp = c.ExecutedAt ?? DateTime.UtcNow,
-                    Type = c.OrderSide,
-                    Volume = c.QuantityDone
-                });
-            return new WebCallResult<IEnumerable<ICommonRecentTrade>>(orders.ResponseStatusCode, orders.ResponseHeaders, tradedOrders, null);
+            var lastTrades = await GetLastPublicTradesAsync(symbol);       
+            return new WebCallResult<IEnumerable<ICommonRecentTrade>>(lastTrades.ResponseStatusCode, lastTrades.ResponseHeaders, lastTrades.Data, lastTrades.Error);
         }
 
         public async Task<WebCallResult<ICommonOrderId>> PlaceOrderAsync(string symbol, IExchangeClient.OrderSide side, IExchangeClient.OrderType type, decimal quantity, decimal? price = null, string accountId = null)

@@ -17,6 +17,8 @@ namespace AlterDice.ConsoleClient
 
         static async Task Main(string[] args)
         {
+            IExchangeClient cl = new AlterDiceClient();
+            var data = await cl.GetRecentTradesAsync("BTCUSDT");
             var book = new AlterDiceSymbolOrderBook("BTCUSDT", new AlterDiceOrderBookOptions("BTCUSDT", 3051));
 
             //    book.OnOrderBookUpdate += Book_OnOrderBookUpdate;
