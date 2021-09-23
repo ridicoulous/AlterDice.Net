@@ -3,17 +3,15 @@ using CryptoExchange.Net.OrderBook;
 using CryptoExchange.Net.Sockets;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using CryptoExchange.Net;
 using CryptoExchange.Net.Interfaces;
 using System.Timers;
-using System.Threading;
 using CryptoExchange.Net.Logging;
 using AlterDice.Net.Objects.Socket;
 using System.Linq;
 using AlterDice.Net.Objects;
+using Microsoft.Extensions.Logging;
 
 namespace AlterDice.Net
 {
@@ -64,8 +62,8 @@ namespace AlterDice.Net
 
             _socket = new AlterDiceSocketClient("AlterDiceSocketBook", new SocketClientOptions("https://socket.alterdice.com")
             {
-                LogVerbosity = CryptoExchange.Net.Logging.LogVerbosity.Debug,
-                LogWriters = new System.Collections.Generic.List<System.IO.TextWriter>() { new DebugTextWriter() },
+                LogLevel = LogLevel.Debug,
+                LogWriters = new List<ILogger> { new DebugLogger() }
             },
             new AlterDiceAuthenticationProvider(new CryptoExchange.Net.Authentication.ApiCredentials("42", "42")));
 
@@ -108,7 +106,7 @@ namespace AlterDice.Net
             }
             catch (Exception ex)
             {
-                log.Write(CryptoExchange.Net.Logging.LogVerbosity.Error, ex.ToString());
+                log.Write(LogLevel.Error, ex.ToString());
                 return new CallResult<bool>(false, new ServerError(ex.ToString()));
             }
         }
@@ -120,12 +118,12 @@ namespace AlterDice.Net
             _socket.Dispose();
         }
 
-        protected override async Task<CallResult<bool>> DoResync()
+        protected override async Task<CallResult<bool>> DoResyncAsync()
         {
             return await GetAndSetBook();
         }
 
-        protected override async Task<CallResult<UpdateSubscription>> DoStart()
+        protected override async Task<CallResult<UpdateSubscription>> DoStartAsync()
         {
             //_socket.OnOrderBookUpdate += _socket_OnOrderBookUpdate;
             WebsocketFactory wf = new WebsocketFactory();

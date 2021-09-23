@@ -8,7 +8,7 @@ using System.Text;
 
 namespace AlterDice.Net.Objects
 {
-    public class AlterDiceOrder : ICommonOrder, ICommonOrderId
+    public class AlterDiceOrder : ICommonOrder
     {
         [JsonProperty("id")]
         public long Id { get; set; }
@@ -53,8 +53,6 @@ namespace AlterDice.Net.Objects
 
         public decimal CommonQuantity => Quantity;
 
-        public string CommonStatus => Status.ToString();
-
         public bool IsActive => Status == AlterDiceOrderStatus.Active || Status == AlterDiceOrderStatus.InProcess;
 
         public IExchangeClient.OrderSide CommonSide => OrderSide == AlterDiceOrderSide.Buy ? IExchangeClient.OrderSide.Buy : IExchangeClient.OrderSide.Sell;
@@ -64,6 +62,17 @@ namespace AlterDice.Net.Objects
             AlterDiceOrderType.Limit => IExchangeClient.OrderType.Limit,
             AlterDiceOrderType.Market => IExchangeClient.OrderType.Market,
             _ => IExchangeClient.OrderType.Other
+        };
+
+        public DateTime CommonOrderTime => CreatedAt;
+
+        public IExchangeClient.OrderStatus CommonStatus => Status switch
+        {
+            AlterDiceOrderStatus.Active => IExchangeClient.OrderStatus.Active,
+            AlterDiceOrderStatus.InProcess => IExchangeClient.OrderStatus.Active,
+            AlterDiceOrderStatus.Canceled => IExchangeClient.OrderStatus.Canceled,
+            AlterDiceOrderStatus.Filled => IExchangeClient.OrderStatus.Filled,
+            _ => throw new NotImplementedException("Undefined order status")
         };
     }
 }
