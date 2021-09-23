@@ -52,7 +52,14 @@ namespace AlterDice.Net.Objects
 
         public decimal CommonQuantity => Quantity;
 
-        public string CommonStatus => Status.ToString();
+        public IExchangeClient.OrderStatus CommonStatus => Status switch
+        {
+            AlterDiceOrderStatus.Active => IExchangeClient.OrderStatus.Active,
+            AlterDiceOrderStatus.InProcess => IExchangeClient.OrderStatus.Active,
+            AlterDiceOrderStatus.Canceled => IExchangeClient.OrderStatus.Canceled,
+            AlterDiceOrderStatus.Filled => IExchangeClient.OrderStatus.Filled,
+            _ => throw new NotImplementedException("Undefined order status")
+        };
 
         public bool IsActive => Status == 0;
 
@@ -67,5 +74,7 @@ namespace AlterDice.Net.Objects
 
         [JsonProperty("list_trades")]
         public List<AlterDiceOrderTrade> Trades { get; set; }
+
+        public DateTime CommonOrderTime => CreatedAt;
     }
 }

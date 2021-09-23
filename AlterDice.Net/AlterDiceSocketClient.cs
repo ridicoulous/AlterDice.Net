@@ -4,6 +4,7 @@ using CryptoExchange.Net;
 using CryptoExchange.Net.Authentication;
 using CryptoExchange.Net.Objects;
 using CryptoExchange.Net.Sockets;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 //using Newtonsoft.Json;
@@ -33,7 +34,7 @@ namespace AlterDice.Net
 
             _socketIo.OnConnected += async (sender, e) =>
             {
-                log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"{DateTime.UtcNow}: connected");
+                log.Write(LogLevel.Debug, $"{DateTime.UtcNow}: connected");
             };
             _socketIo.On("message", (data) =>
             {
@@ -51,12 +52,12 @@ namespace AlterDice.Net
             }
             catch (Exception ex)
             {
-                log.Write(CryptoExchange.Net.Logging.LogVerbosity.Error, $"can not process event {eventData.ToString()}: {ex.Message}");
+                log.Write(LogLevel.Error, $"can not process event {eventData.ToString()}: {ex.Message}");
             }
         }
         private void _socketIo_OnPong(object sender, TimeSpan e)
         {
-            log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"{DateTime.UtcNow}: pong recieved");
+            log.Write(LogLevel.Debug, $"{DateTime.UtcNow}: pong recieved");
 
         }
         public async Task Send(string data)
@@ -66,19 +67,19 @@ namespace AlterDice.Net
         private void _socketIo_OnDisconnected(object sender, string e)
         {
 
-            log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"Socket.io client disconnected: {e}");
+            log.Write(LogLevel.Debug, $"Socket.io client disconnected: {e}");
         }
 
         private void _socketIo_OnError(object sender, string e)
         {
-            log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"Socket.io client error: {e}");
+            log.Write(LogLevel.Debug, $"Socket.io client error: {e}");
         }
 
         public event Action<AlterDiceSocketOrderBookUpdateEvent> OnOrderBookUpdate;
 
         public async Task SubscribeToBook(int symbolId)
         {
-            log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, $"Subscribing to bookId {symbolId}");
+            log.Write(LogLevel.Debug, $"Subscribing to bookId {symbolId}");
 
             //await _socketIo.EmitAsync("subscribe", new SubscribeRequest("short_book",symbolId));          
             await _socketIo.EmitAsync("subscribe", $"short_book_{symbolId}");
@@ -86,12 +87,12 @@ namespace AlterDice.Net
 
         private void _socketIo_OnConnected(object sender, EventArgs e)
         {
-            log.Write(CryptoExchange.Net.Logging.LogVerbosity.Debug, "Socket.io client was connected");
+            log.Write(LogLevel.Debug, "Socket.io client was connected");
         }
 
-        protected override async Task<CallResult<bool>> AuthenticateSocket(SocketConnection s)
+        protected override async Task<CallResult<bool>> AuthenticateSocketAsync(SocketConnection s)
         {
-            return new CallResult<bool>(false, null);
+            return await Task.Run(() => new CallResult<bool>(false, null));
         }
 
         protected override bool HandleQueryResponse<T>(SocketConnection s, object request, JToken data, out CallResult<T> callResult)
@@ -114,7 +115,7 @@ namespace AlterDice.Net
             throw new NotImplementedException();
         }
 
-        protected override Task<bool> Unsubscribe(SocketConnection connection, SocketSubscription s)
+        protected override Task<bool> UnsubscribeAsync(SocketConnection connection, SocketSubscription s)
         {
             throw new NotImplementedException();
         }

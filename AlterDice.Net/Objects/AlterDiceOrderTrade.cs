@@ -43,5 +43,7 @@ namespace AlterDice.Net.Objects
         public decimal CommonFee => Commission;
 
         public string CommonFeeAsset => "";
+
+        public DateTime CommonTradeTime => TimeCreate;
     }
 }
