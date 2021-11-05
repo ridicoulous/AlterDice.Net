@@ -3,11 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.3.6</Version>
+    <Version>0.3.7</Version>
     <LangVersion>latest</LangVersion>
     <PackageProjectUrl>https://github.com/ridicoulous/AlterDice.Net</PackageProjectUrl>
     <Copyright>ridicoulous</Copyright>
     <PackageReleaseNotes>
+      05/11/2021 - base lib update
       05/06/2021 - base lib update
       04/08/2021 - minor improvements
 04/06/2021 - added pagination at orders history, base library update
@@ -17,8 +18,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CryptoExchange.Net" Version="4.2.2" />
-    <PackageReference Include="SocketIOClient" Version="2.3.0" />
+    <PackageReference Include="CryptoExchange.Net" Version="4.2.8" />
+    <PackageReference Include="SocketIOClient" Version="3.0.3" />
   </ItemGroup>
 
 </Project>
