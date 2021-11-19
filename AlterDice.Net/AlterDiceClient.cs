@@ -151,7 +151,7 @@ namespace AlterDice.Net
             var request = await SendRequestAsync<AlterDiceGetOrderResponse>(GetUrl(CancelOrderUrl), HttpMethod.Post, ct, new AlterDiceGetOrderRequest(orderId).AsDictionary(), true, false);
             if (request.Success)
             {
-                OnOrderCanceled?.Invoke(request.Data.Response);
+                OnOrderCanceled?.Invoke(new AlterDiceOrderResponse(orderId) );
             }
             return new WebCallResult<bool>(request.ResponseStatusCode, request.ResponseHeaders, request, request.Error);
         }

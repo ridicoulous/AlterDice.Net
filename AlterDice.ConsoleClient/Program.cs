@@ -17,8 +17,12 @@ namespace AlterDice.ConsoleClient
 
         static async Task Main(string[] args)
         {
-            IExchangeClient cl = new AlterDiceClient();
-            var data = await cl.GetRecentTradesAsync("BTCUSDT");
+            AlterDiceSocketClient s = new AlterDiceSocketClient("42", new CryptoExchange.Net.Objects.SocketClientOptions("alterdice.com"),null);
+            s.OnOrderBookUpdate += S_OnOrderBookUpdate;
+          await  s.SubscribeToBook(7871);
+
+            //IExchangeClient cl = new AlterDiceClient();
+            // var data = await cl.GetRecentTradesAsync("BTCUSDT");
             var book = new AlterDiceSymbolOrderBook("BTCUSDT", new AlterDiceOrderBookOptions("BTCUSDT", 3051));
 
             //    book.OnOrderBookUpdate += Book_OnOrderBookUpdate;
@@ -26,6 +30,11 @@ namespace AlterDice.ConsoleClient
             await book.StartAsync();
             Console.ReadLine();
             book.Dispose();
+        }
+
+        private static void S_OnOrderBookUpdate(Net.Objects.Socket.AlterDiceSocketOrderBookUpdateEvent obj)
+        {
+            Console.WriteLine(JsonConvert.SerializeObject(obj.Data));
         }
 
         private static void Book_OnBestOffersChanged((ISymbolOrderBookEntry BestBid, ISymbolOrderBookEntry BestAsk) obj)
